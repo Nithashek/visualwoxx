@@ -1,8 +1,5 @@
 import React from 'react';
-import {
-  Sparkles, Compass, Target, Eye, Workflow, CheckCircle2,
-  ArrowRight, Globe, Users, Shield
-} from 'lucide-react';
+import { ArrowRight, Globe } from 'lucide-react';
 import { InstagramIcon, LinkedinIcon, YoutubeIcon } from '../components/SocialIcons';
 import { TeamMember, SiteSettings } from '../types';
 
@@ -49,29 +46,24 @@ export const AboutPage: React.FC<AboutPageProps> = ({ settings, team, onNavigate
 
   return (
     <div className="relative pt-28 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-24">
-      {/* Background ambient light */}
-      <div className="orb-purple top-20 right-10" />
-      <div className="orb-cyan top-96 left-0" />
-
       {/* =========================================================
           HERO & STUDIO STORY
          ========================================================= */}
       <section className="text-center max-w-4xl mx-auto space-y-6 relative z-10">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-dark-900 border border-purple-800/40 text-brand-neon text-xs font-semibold uppercase tracking-wider">
-          <Sparkles className="w-3.5 h-3.5 text-cyan-300" />
-          <span>About Visual Woxx</span>
-        </div>
+        <span className="text-xs font-mono text-violet-400 uppercase tracking-widest block">
+          About Visual Woxx
+        </span>
 
         <h1 className="text-4xl sm:text-6xl font-black font-display text-white tracking-tight leading-tight">
           Where Creative Vision Meets Cinematic Precision
         </h1>
 
-        <p className="text-base sm:text-lg text-slate-300 leading-relaxed max-w-3xl mx-auto">
-          Visual Woxx is a premier creative digital solutions team that combines design, media production, and digital creativity to deliver complete visual solutions for events, brands, businesses, and visionary creators.
+        <p className="text-base sm:text-lg text-zinc-300 leading-relaxed max-w-3xl mx-auto">
+          Visual Woxx is a creative digital solutions team that combines graphic design, media production, and digital creativity to deliver complete visual solutions for events, brands, businesses, and creators.
         </p>
 
-        <p className="text-sm text-slate-400 leading-relaxed max-w-2xl mx-auto">
-          We believe high-impact storytelling requires both artistic fearlessness and disciplined execution. By uniting designers, directors, editors, and photographers under one roof, we eliminate creative friction and deliver cohesive visual legacy.
+        <p className="text-sm text-zinc-400 leading-relaxed max-w-2xl mx-auto">
+          We believe impactful storytelling requires both artistic fearlessness and disciplined execution. By uniting designers, directors, editors, and photographers under one roof, we eliminate creative friction and deliver cohesive visual identity.
         </p>
       </section>
 
@@ -80,40 +72,32 @@ export const AboutPage: React.FC<AboutPageProps> = ({ settings, team, onNavigate
          ========================================================= */}
       <section className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
         {/* Mission Card */}
-        <div className="relative rounded-3xl p-8 sm:p-10 bg-gradient-to-br from-dark-900 via-dark-850 to-dark-950 border border-purple-700/30 shadow-2xl space-y-4">
-          <div className="w-12 h-12 rounded-2xl bg-purple-950/80 border border-purple-600/40 flex items-center justify-center text-brand-neon shadow-glow-subtle">
-            <Target className="w-6 h-6" />
-          </div>
-
-          <span className="text-xs font-bold uppercase tracking-widest text-cyan-300 block">
-            Our Purpose
+        <div className="rounded-2xl p-8 sm:p-10 bg-zinc-900 border border-white/10 space-y-4">
+          <span className="text-xs font-mono text-violet-400 uppercase tracking-widest block">
+            01 / PURPOSE
           </span>
 
           <h2 className="text-2xl font-bold font-display text-white">
             Our Mission
           </h2>
 
-          <p className="text-sm text-slate-300 leading-relaxed">
+          <p className="text-sm text-zinc-300 leading-relaxed">
             "{settings?.mission ||
               'Our mission is to transform ideas into impactful visual experiences by delivering innovative, high-quality, and accessible creative digital solutions. We aim to simplify the creative process for our clients by bringing diverse creative services together under one roof.'}"
           </p>
         </div>
 
         {/* Vision Card */}
-        <div className="relative rounded-3xl p-8 sm:p-10 bg-gradient-to-br from-dark-900 via-dark-850 to-dark-950 border border-purple-700/30 shadow-2xl space-y-4">
-          <div className="w-12 h-12 rounded-2xl bg-cyan-950/80 border border-cyan-600/40 flex items-center justify-center text-cyan-300 shadow-glow-subtle">
-            <Eye className="w-6 h-6" />
-          </div>
-
-          <span className="text-xs font-bold uppercase tracking-widest text-brand-neon block">
-            Our Horizon
+        <div className="rounded-2xl p-8 sm:p-10 bg-zinc-900 border border-white/10 space-y-4">
+          <span className="text-xs font-mono text-violet-400 uppercase tracking-widest block">
+            02 / HORIZON
           </span>
 
           <h2 className="text-2xl font-bold font-display text-white">
             Our Vision
           </h2>
 
-          <p className="text-sm text-slate-300 leading-relaxed">
+          <p className="text-sm text-zinc-300 leading-relaxed">
             "{settings?.vision ||
               'Our vision is to become a trusted creative digital solutions brand known for innovation, quality, and originality, empowering businesses, individuals, and organizations to communicate their stories and build stronger visual identities.'}"
           </p>
@@ -125,15 +109,14 @@ export const AboutPage: React.FC<AboutPageProps> = ({ settings, team, onNavigate
          ========================================================= */}
       <section className="space-y-12 relative z-10">
         <div className="text-center max-w-3xl mx-auto space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-dark-900 border border-purple-800/40 text-brand-neon text-xs font-semibold uppercase tracking-wider">
-            <Workflow className="w-3.5 h-3.5 text-cyan-300" />
-            <span>Proven Workflow</span>
-          </div>
+          <span className="text-xs font-mono text-violet-400 uppercase tracking-widest block">
+            Our Workflow
+          </span>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-white font-display">
-            Our 6-Step Creative Approach
+            The 6-Step Creative Approach
           </h2>
-          <p className="text-sm text-slate-400">
-            A structured, collaborative pathway from initial spark to final delivery.
+          <p className="text-sm text-zinc-400">
+            A structured, collaborative pathway from initial concept to master delivery.
           </p>
         </div>
 
@@ -141,28 +124,25 @@ export const AboutPage: React.FC<AboutPageProps> = ({ settings, team, onNavigate
           {workflowSteps.map((step) => (
             <div
               key={step.num}
-              className="p-7 rounded-3xl bg-dark-900/60 border border-purple-900/30 card-hover-lift space-y-4 flex flex-col justify-between"
+              className="p-7 rounded-2xl bg-zinc-900/60 border border-white/10 card-hover-lift space-y-4 flex flex-col justify-between"
             >
               <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-2xl font-black font-mono text-transparent bg-clip-text bg-gradient-to-r from-brand-violet to-cyan-400">
-                    {step.num}
-                  </span>
-                  <span className="w-2 h-2 rounded-full bg-brand-neon" />
-                </div>
+                <span className="text-xs font-mono text-violet-400 block mb-2">
+                  PHASE {step.num}
+                </span>
 
-                <h3 className="text-lg font-bold text-white font-display mb-2">
+                <h3 className="text-base font-bold text-white font-display mb-2">
                   {step.title}
                 </h3>
 
-                <p className="text-xs text-slate-300 leading-relaxed">
+                <p className="text-xs text-zinc-400 leading-relaxed">
                   {step.desc}
                 </p>
               </div>
 
-              <div className="pt-2 text-[11px] font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1">
-                <span>Phase {step.num}</span>
-                <ArrowRight className="w-3 h-3 text-brand-neon" />
+              <div className="pt-2 text-[11px] font-mono text-zinc-500 uppercase tracking-wider flex items-center gap-1">
+                <span>Step {step.num} of 06</span>
+                <ArrowRight className="w-3 h-3 text-violet-400 ml-1" />
               </div>
             </div>
           ))}
@@ -174,15 +154,14 @@ export const AboutPage: React.FC<AboutPageProps> = ({ settings, team, onNavigate
          ========================================================= */}
       <section className="space-y-12 relative z-10">
         <div className="text-center max-w-3xl mx-auto space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-dark-900 border border-purple-800/40 text-brand-neon text-xs font-semibold uppercase tracking-wider">
-            <Users className="w-3.5 h-3.5 text-cyan-300" />
-            <span>Leadership & Core Committee</span>
-          </div>
+          <span className="text-xs font-mono text-violet-400 uppercase tracking-widest block">
+            Core Committee
+          </span>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-white font-display">
-            Meet the Minds Behind Visual Woxx
+            Leadership & Creative Direction
           </h2>
-          <p className="text-sm text-slate-400">
-            A dedicated collective of directors, designers, cinematographers, and strategists.
+          <p className="text-sm text-zinc-400">
+            A dedicated collective of directors, designers, cinematographers, and production leads.
           </p>
         </div>
 
@@ -190,18 +169,18 @@ export const AboutPage: React.FC<AboutPageProps> = ({ settings, team, onNavigate
           {team.map((member) => (
             <div
               key={member.id}
-              className="group relative rounded-3xl overflow-hidden bg-dark-900/70 border border-purple-800/30 card-hover-lift flex flex-col justify-between"
+              className="group rounded-2xl overflow-hidden bg-zinc-900 border border-white/10 card-hover-lift flex flex-col justify-between"
             >
               <div>
                 {/* Photo Container */}
-                <div className="relative aspect-square overflow-hidden bg-dark-950">
+                <div className="relative aspect-square overflow-hidden bg-black">
                   <img
                     src={member.photoUrl}
                     alt={member.fullName}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   <div className="absolute top-3 right-3">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-300 bg-dark-950/80 backdrop-blur-md px-2.5 py-1 rounded-full border border-cyan-800/40">
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-white bg-black/75 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/10">
                       {member.department}
                     </span>
                   </div>
@@ -209,22 +188,22 @@ export const AboutPage: React.FC<AboutPageProps> = ({ settings, team, onNavigate
 
                 {/* Info Container */}
                 <div className="p-5 space-y-2">
-                  <h3 className="text-base font-bold text-white group-hover:text-brand-neon transition-colors">
+                  <h3 className="text-base font-bold text-white group-hover:text-violet-300 transition-colors">
                     {member.fullName}
                   </h3>
-                  <span className="block text-xs font-semibold text-brand-electric">
+                  <span className="block text-xs font-medium text-violet-400">
                     {member.position}
                   </span>
-                  <p className="text-xs text-slate-300 line-clamp-3 leading-relaxed pt-1">
+                  <p className="text-xs text-zinc-400 line-clamp-3 leading-relaxed pt-1">
                     {member.bio}
                   </p>
                 </div>
               </div>
 
               {/* Social Links Footer */}
-              <div className="p-5 pt-0 border-t border-purple-900/20 flex items-center justify-between text-slate-400">
-                <span className="text-[10px] uppercase tracking-wider text-slate-500">Connect</span>
-                <div className="flex items-center gap-2">
+              <div className="p-5 pt-0 border-t border-white/[0.06] flex items-center justify-between text-zinc-400">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-500">Links</span>
+                <div className="flex items-center gap-2.5">
                   {member.socialLinks?.instagram && (
                     <a
                       href={member.socialLinks.instagram}
@@ -278,14 +257,14 @@ export const AboutPage: React.FC<AboutPageProps> = ({ settings, team, onNavigate
 
       {/* Bottom CTA Banner */}
       <section className="text-center pt-8">
-        <div className="p-8 rounded-3xl bg-dark-900/40 border border-purple-900/30 max-w-3xl mx-auto space-y-4">
+        <div className="p-8 rounded-2xl bg-zinc-900 border border-white/10 max-w-3xl mx-auto space-y-4">
           <h3 className="text-xl font-bold text-white font-display">
-            Want to Collaborate With Our Leadership Team?
+            Collaborate With Our Creative Team
           </h3>
-          <p className="text-xs text-slate-300">
-            Schedule an appointment directly with our creative directors to discuss your upcoming project or festival.
+          <p className="text-xs text-zinc-400 max-w-xl mx-auto">
+            Schedule an appointment directly with our creative directors to discuss your upcoming project or event.
           </p>
-          <div className="pt-2 flex justify-center gap-4">
+          <div className="pt-2 flex flex-col sm:flex-row justify-center gap-4">
             <button
               onClick={() => onOpenBooking()}
               className="btn-electric px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider text-white"
@@ -294,7 +273,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ settings, team, onNavigate
             </button>
             <button
               onClick={() => onNavigate('join-us')}
-              className="px-6 py-2.5 rounded-full bg-dark-950 text-slate-300 hover:text-white border border-purple-800/40 text-xs font-bold uppercase tracking-wider"
+              className="px-6 py-2.5 rounded-full bg-zinc-800 text-zinc-300 hover:text-white border border-white/10 text-xs font-bold uppercase tracking-wider transition-colors"
             >
               Join Our Freelancer Roster
             </button>

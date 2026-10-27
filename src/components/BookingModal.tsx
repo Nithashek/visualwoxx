@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, CheckCircle, Calendar, Clock, DollarSign, Sparkles, Send, AlertCircle, Phone, Mail, MessageSquare } from 'lucide-react';
+import { X, CheckCircle, Send, AlertCircle } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { submitInquiry, fetchServices } from '../services/api';
 import { Service } from '../types';
@@ -80,10 +80,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ini
         particleCount: 80,
         spread: 60,
         origin: { y: 0.6 },
-        colors: ['#8b5cf6', '#a855f7', '#06b6d4', '#ec4899']
+        colors: ['#7c3aed', '#a78bfa', '#ffffff']
       });
     } catch (err: any) {
-      setError(err.message || 'Failed to submit inquiry. Please verify your details.');
+      setError(err.message || 'Failed to submit inquiry. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -91,6 +91,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ini
 
   const handleResetAndClose = () => {
     setSuccessData(null);
+    setSelectedServices([]);
     setFullName('');
     setEmail('');
     setPhone('');
@@ -99,77 +100,75 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ini
     setProjectDescription('');
     setEventDate('');
     setPreferredAppointmentDate('');
-    setSelectedServices([]);
     setError(null);
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md overflow-y-auto">
-      <div className="relative w-full max-w-2xl bg-dark-900 border border-purple-800/40 rounded-3xl shadow-2xl p-6 sm:p-8 my-8 text-slate-100 max-h-[92vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/85 backdrop-blur-md overflow-y-auto">
+      <div className="relative w-full max-w-2xl bg-zinc-900 border border-white/10 rounded-2xl shadow-2xl overflow-hidden my-6 p-6 sm:p-8 text-zinc-100 max-h-[92vh] overflow-y-auto">
         {/* Close Button */}
         <button
           onClick={handleResetAndClose}
-          className="absolute top-5 right-5 w-8 h-8 rounded-full bg-dark-800 hover:bg-dark-750 flex items-center justify-center text-slate-400 hover:text-white border border-purple-900/30 transition-all"
+          className="absolute top-5 right-5 w-8 h-8 rounded-full bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center text-zinc-400 hover:text-white border border-white/10 transition-colors"
         >
           <X className="w-4 h-4" />
         </button>
 
         {successData ? (
           <div className="text-center py-8 space-y-5">
-            <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-brand-purple to-brand-electric flex items-center justify-center text-white shadow-glow-purple">
-              <CheckCircle className="w-9 h-9" />
+            <div className="w-14 h-14 mx-auto rounded-2xl bg-violet-600 flex items-center justify-center text-white">
+              <CheckCircle className="w-8 h-8" />
             </div>
 
             <div className="space-y-2">
               <h3 className="text-2xl font-bold font-display text-white">
-                Project Inquiry & Appointment Received!
+                Inquiry & Appointment Request Logged
               </h3>
-              <p className="text-sm text-slate-300 max-w-md mx-auto leading-relaxed">
+              <p className="text-sm text-zinc-300 max-w-md mx-auto leading-relaxed">
                 {successData.message}
               </p>
             </div>
 
-            <div className="p-4 rounded-xl bg-dark-950/80 border border-purple-800/30 max-w-sm mx-auto text-left space-y-2">
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-400">Reference ID:</span>
-                <span className="font-mono text-brand-neon font-bold">{successData.referenceId}</span>
+            <div className="p-4 rounded-xl bg-zinc-950 border border-white/10 max-w-sm mx-auto text-left space-y-2 text-xs">
+              <div className="flex justify-between items-center">
+                <span className="text-zinc-500 font-mono">Reference Code:</span>
+                <span className="font-mono text-violet-400 font-bold">{successData.referenceId}</span>
               </div>
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-400">Status:</span>
-                <span className="px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-300 font-semibold text-[11px]">
+              <div className="flex justify-between items-center">
+                <span className="text-zinc-500 font-mono">Current Status:</span>
+                <span className="px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-200 font-mono text-[10px]">
                   Under Review
                 </span>
               </div>
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-400">Preferred Contact:</span>
-                <span className="text-slate-200 font-medium">{preferredContactMethod}</span>
+              <div className="flex justify-between items-center">
+                <span className="text-zinc-500 font-mono">Contact Method:</span>
+                <span className="text-zinc-200 font-medium">{preferredContactMethod}</span>
               </div>
             </div>
 
-            <p className="text-xs text-slate-400">
-              Note: Appointment slots are reviewed by our operations team and will be confirmed via {preferredContactMethod}.
+            <p className="text-xs text-zinc-400">
+              Our studio operations team will confirm availability via {preferredContactMethod}.
             </p>
 
             <button
               onClick={handleResetAndClose}
-              className="btn-electric px-6 py-2.5 rounded-xl text-sm font-bold text-white shadow-glow-subtle"
+              className="btn-electric px-6 py-2.5 rounded-lg text-xs font-bold text-white uppercase tracking-wider"
             >
-              Done & Return to Site
+              Done & Return
             </button>
           </div>
         ) : (
           <div>
             <div className="mb-6 space-y-1">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-950/70 border border-purple-700/40 text-brand-neon text-xs font-semibold uppercase tracking-wider mb-2">
-                <Sparkles className="w-3.5 h-3.5 text-cyan-300" />
-                <span>Project Inquiry & Booking</span>
-              </div>
-              <h2 className="text-2xl font-extrabold text-white font-display">
-                Let's Build Your Visual Experience
+              <span className="text-xs font-mono text-violet-400 uppercase tracking-widest block mb-1">
+                Project Discovery & Scheduling
+              </span>
+              <h2 className="text-2xl font-bold text-white font-display">
+                Start a Creative Project
               </h2>
-              <p className="text-xs text-slate-400">
-                Tell us about your brand, upcoming event, or creative vision. Select multiple services if you need a cohesive package.
+              <p className="text-xs text-zinc-400">
+                Tell us about your brand, upcoming event, or production requirements.
               </p>
             </div>
 
@@ -180,11 +179,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ini
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-5 text-xs">
+            <form onSubmit={handleSubmit} className="space-y-4 text-xs">
               {/* Service Multi-Select */}
               <div>
-                <label className="block text-slate-300 font-semibold mb-2">
-                  Creative Services Required <span className="text-brand-neon">*</span> (Select all that apply)
+                <label className="block text-zinc-300 font-medium mb-1.5 font-mono text-[11px] uppercase tracking-wider">
+                  Services Required <span className="text-violet-400">*</span>
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {servicesList.map((srv) => {
@@ -196,13 +195,13 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ini
                         onClick={() => toggleService(srv.title)}
                         className={`p-2.5 rounded-xl text-left font-medium transition-all border ${
                           isSelected
-                            ? 'bg-purple-900/40 border-brand-violet text-white shadow-glow-subtle'
-                            : 'bg-dark-950/60 border-purple-900/20 text-slate-300 hover:border-purple-700/40 hover:text-white'
+                            ? 'bg-violet-600 border-violet-500 text-white'
+                            : 'bg-zinc-950 border-white/10 text-zinc-400 hover:border-white/20 hover:text-white'
                         }`}
                       >
                         <div className="flex items-center justify-between">
-                          <span className="text-[11px] leading-tight">{srv.title}</span>
-                          {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />}
+                          <span className="text-xs leading-tight">{srv.title}</span>
+                          {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
                         </div>
                       </button>
                     );
@@ -210,159 +209,157 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ini
                 </div>
               </div>
 
-              {/* Client Basic Details */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              {/* Client Info Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1">
-                    Full Name <span className="text-brand-neon">*</span>
+                  <label className="block text-zinc-400 font-medium mb-1 font-mono text-[10px] uppercase">
+                    Full Name <span className="text-violet-400">*</span>
                   </label>
                   <input
                     type="text"
                     required
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    placeholder="e.g. Radhika Sen"
-                    className="w-full bg-dark-950/70 border border-purple-900/30 rounded-xl px-3.5 py-2.5 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand-violet"
+                    placeholder="e.g. Alex Morgan"
+                    className="w-full bg-zinc-950 border border-white/10 rounded-lg px-3 py-2 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-violet-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1">
-                    Email Address <span className="text-brand-neon">*</span>
+                  <label className="block text-zinc-400 font-medium mb-1 font-mono text-[10px] uppercase">
+                    Email Address <span className="text-violet-400">*</span>
                   </label>
                   <input
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="name@company.com"
-                    className="w-full bg-dark-950/70 border border-purple-900/30 rounded-xl px-3.5 py-2.5 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand-violet"
+                    placeholder="alex@example.com"
+                    className="w-full bg-zinc-950 border border-white/10 rounded-lg px-3 py-2 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-violet-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1">
-                    Phone Number <span className="text-brand-neon">*</span>
+                  <label className="block text-zinc-400 font-medium mb-1 font-mono text-[10px] uppercase">
+                    Phone / WhatsApp <span className="text-violet-400">*</span>
                   </label>
                   <input
                     type="tel"
                     required
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+91 98470 00000"
-                    className="w-full bg-dark-950/70 border border-purple-900/30 rounded-xl px-3.5 py-2.5 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand-violet"
+                    placeholder="+91 98765 43210"
+                    className="w-full bg-zinc-950 border border-white/10 rounded-lg px-3 py-2 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-violet-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1">
-                    Brand / Organization <span className="text-slate-500">(Optional)</span>
+                  <label className="block text-zinc-400 font-medium mb-1 font-mono text-[10px] uppercase">
+                    Brand or Organization
                   </label>
                   <input
                     type="text"
                     value={organization}
                     onChange={(e) => setOrganization(e.target.value)}
-                    placeholder="e.g. Solstice Media, Personal"
-                    className="w-full bg-dark-950/70 border border-purple-900/30 rounded-xl px-3.5 py-2.5 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand-violet"
+                    placeholder="Company or Event name"
+                    className="w-full bg-zinc-950 border border-white/10 rounded-lg px-3 py-2 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-violet-500"
                   />
                 </div>
               </div>
 
-              {/* Project Title & Scope */}
-              <div className="space-y-3.5">
+              {/* Project Title & Description */}
+              <div className="space-y-3 pt-1">
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1">
-                    Project / Event Title <span className="text-brand-neon">*</span>
+                  <label className="block text-zinc-400 font-medium mb-1 font-mono text-[10px] uppercase">
+                    Project or Event Title <span className="text-violet-400">*</span>
                   </label>
                   <input
                     type="text"
                     required
                     value={projectTitle}
                     onChange={(e) => setProjectTitle(e.target.value)}
-                    placeholder="e.g. Autumn Music Fest 2026 / Luxury Perfume Packaging"
-                    className="w-full bg-dark-950/70 border border-purple-900/30 rounded-xl px-3.5 py-2.5 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand-violet"
+                    placeholder="e.g. Summer Music Fest Coverage / Brand Identity Redesign"
+                    className="w-full bg-zinc-950 border border-white/10 rounded-lg px-3 py-2 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-violet-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1">
-                    Project Description & Requirements <span className="text-brand-neon">*</span>
+                  <label className="block text-zinc-400 font-medium mb-1 font-mono text-[10px] uppercase">
+                    Project Description & Creative Scope <span className="text-violet-400">*</span>
                   </label>
                   <textarea
-                    required
                     rows={3}
+                    required
                     value={projectDescription}
                     onChange={(e) => setProjectDescription(e.target.value)}
-                    placeholder="Describe your vision, target audience, deliverables needed, shooting location, timeline, and any specific aesthetic inspirations..."
-                    className="w-full bg-dark-950/70 border border-purple-900/30 rounded-xl px-3.5 py-2 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand-violet"
+                    placeholder="Describe your vision, deliverables needed, locations, references, or timeline..."
+                    className="w-full bg-zinc-950 border border-white/10 rounded-lg px-3 py-2 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-violet-500"
                   />
                 </div>
               </div>
 
-              {/* Dates & Scheduling */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {/* Scheduling Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1">
-                    Event / Target Date
+                  <label className="block text-zinc-400 font-medium mb-1 font-mono text-[10px] uppercase">
+                    Event / Shoot Date
                   </label>
                   <input
                     type="date"
                     value={eventDate}
                     onChange={(e) => setEventDate(e.target.value)}
-                    className="w-full bg-dark-950/70 border border-purple-900/30 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-brand-violet"
+                    className="w-full bg-zinc-950 border border-white/10 rounded-lg px-3 py-2 text-zinc-100 focus:outline-none focus:border-violet-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1 flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5 text-brand-neon" />
-                    <span>Appointment Date</span>
+                  <label className="block text-zinc-400 font-medium mb-1 font-mono text-[10px] uppercase">
+                    Preferred Meeting Date <span className="text-violet-400">*</span>
                   </label>
                   <input
                     type="date"
+                    required
                     value={preferredAppointmentDate}
                     onChange={(e) => setPreferredAppointmentDate(e.target.value)}
-                    className="w-full bg-dark-950/70 border border-purple-900/30 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-brand-violet"
+                    className="w-full bg-zinc-950 border border-white/10 rounded-lg px-3 py-2 text-zinc-100 focus:outline-none focus:border-violet-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1 flex items-center gap-1">
-                    <Clock className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>Preferred Time</span>
+                  <label className="block text-zinc-400 font-medium mb-1 font-mono text-[10px] uppercase">
+                    Preferred Time Slot
                   </label>
                   <input
                     type="time"
                     value={preferredAppointmentTime}
                     onChange={(e) => setPreferredAppointmentTime(e.target.value)}
-                    className="w-full bg-dark-950/70 border border-purple-900/30 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-brand-violet"
+                    className="w-full bg-zinc-950 border border-white/10 rounded-lg px-3 py-2 text-zinc-100 focus:outline-none focus:border-violet-500"
                   />
                 </div>
               </div>
 
               {/* Budget & Contact Method */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1 flex items-center gap-1">
-                    <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Estimated Budget Range</span>
+                  <label className="block text-zinc-400 font-medium mb-1 font-mono text-[10px] uppercase">
+                    Estimated Budget Range
                   </label>
                   <select
                     value={budgetRange}
                     onChange={(e) => setBudgetRange(e.target.value)}
-                    className="w-full bg-dark-950 border border-purple-900/30 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-brand-violet"
+                    className="w-full bg-zinc-950 border border-white/10 rounded-lg px-3 py-2 text-zinc-100 focus:outline-none focus:border-violet-500"
                   >
-                    <option value="Under ₹50,000">Under ₹50,000 (Sprint / Single Asset)</option>
-                    <option value="₹50,000 - ₹1,00,000">₹50,000 - ₹1,00,000 (Targeted Shoot / Campaign)</option>
-                    <option value="₹1,00,000 - ₹2,50,000">₹1,00,000 - ₹2,50,000 (Full Event / Identity Suite)</option>
-                    <option value="₹2,50,000 - ₹5,00,000+">₹2,50,000 - ₹5,00,000+ (Multi-day Production / 360°)</option>
+                    <option value="Under ₹50,000">Under ₹50,000</option>
+                    <option value="₹50,000 - ₹1,00,000">₹50,000 - ₹1,00,000</option>
+                    <option value="₹1,00,000 - ₹2,50,000">₹1,00,000 - ₹2,50,000</option>
+                    <option value="₹2,50,000 - ₹5,00,000+">₹2,50,000 - ₹5,00,000+</option>
                     <option value="Custom Quote Required">Custom Quote Required</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1">
-                    Preferred Contact Method <span className="text-brand-neon">*</span>
+                  <label className="block text-zinc-400 font-medium mb-1 font-mono text-[10px] uppercase">
+                    Preferred Contact Method <span className="text-violet-400">*</span>
                   </label>
                   <div className="grid grid-cols-3 gap-1.5 pt-0.5">
                     {(['Email', 'Phone', 'WhatsApp'] as const).map((method) => (
@@ -370,10 +367,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ini
                         type="button"
                         key={method}
                         onClick={() => setPreferredContactMethod(method)}
-                        className={`py-2 px-2 rounded-xl text-center font-semibold border transition-all ${
+                        className={`py-2 px-2 rounded-lg text-center font-medium border transition-colors ${
                           preferredContactMethod === method
-                            ? 'bg-purple-900/40 border-brand-violet text-white'
-                            : 'bg-dark-950/60 border-purple-900/20 text-slate-400 hover:text-white'
+                            ? 'bg-zinc-800 border-white/20 text-white font-bold'
+                            : 'bg-zinc-950 border-white/10 text-zinc-400 hover:text-white'
                         }`}
                       >
                         {method}
@@ -388,19 +385,19 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ini
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full btn-electric flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold uppercase tracking-wider text-white shadow-glow-purple disabled:opacity-50"
+                  className="w-full btn-electric flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold uppercase tracking-wider text-white disabled:opacity-50"
                 >
                   {loading ? (
                     <span>Submitting Inquiry...</span>
                   ) : (
                     <>
                       <Send className="w-4 h-4" />
-                      <span>Submit Inquiry & Request Appointment</span>
+                      <span>Submit Project Inquiry</span>
                     </>
                   )}
                 </button>
-                <p className="text-[10px] text-slate-400 text-center mt-2">
-                  🔒 We respect your confidentiality. Our creative directors review inquiries within 24 hours.
+                <p className="text-[10px] text-zinc-500 text-center mt-2">
+                  We review requests within 24 hours. Appointments are confirmed based on crew availability.
                 </p>
               </div>
             </form>
