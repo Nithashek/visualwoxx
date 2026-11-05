@@ -131,7 +131,7 @@ export const App: React.FC = () => {
       <Navbar
         currentPage={currentPage}
         onNavigate={handleNavigate}
-        onOpenBooking={handleOpenBooking}
+        onOpenBooking={() => handleOpenBooking()}
       />
 
       {/* Main Public Page Routing */}
@@ -139,18 +139,14 @@ export const App: React.FC = () => {
         {currentPage === 'home' && (
           <HomePage
             settings={settings}
-            services={services}
-            portfolio={portfolio}
             onNavigate={handleNavigate}
             onOpenBooking={handleOpenBooking}
-            onSelectProject={setSelectedPortfolioItem}
           />
         )}
 
         {currentPage === 'about' && (
           <AboutPage
             settings={settings}
-            team={team}
             onNavigate={handleNavigate}
             onOpenBooking={handleOpenBooking}
           />

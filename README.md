@@ -10,7 +10,7 @@ Visual Woxx is a modern, premium, fully responsive web application and internal 
 
 ### 1. Brand Identity & Visual Aesthetics
 * **Theme**: Deep obsidian cinema aesthetic with electric violet, neon purple, and cyan atmospheric glows.
-* **Typography**: Clean, bold geometric typography using Google Fonts `Plus Jakarta Sans` and `Inter`.
+* **Typography**: Clean, bold geometric typography using `Clash Display` (Fontshare) and `Inter` (Google Fonts).
 * **Micro-Interactions**: Glassmorphism card surfaces (`backdrop-blur`), subtle glowing borders, interactive card lift, custom sleek scrollbars, and celebratory confetti upon inquiry submission.
 * **Responsive**: 100% mobile, tablet, and desktop optimized with collapsible navigation drawers and flexible grids.
 

@@ -1,4 +1,10 @@
 @import "tailwindcss";
+@config "../tailwind.config.js";
+
+@theme {
+  --font-sans: 'Clash Display', 'Inter', system-ui, sans-serif;
+  --font-display: 'Clash Display', 'Inter', system-ui, sans-serif;
+}
 
 @layer base {
   :root {
@@ -8,10 +14,11 @@
     --surface-3: #202026;
     --border-subtle: rgba(255, 255, 255, 0.08);
     --border-hover: rgba(255, 255, 255, 0.18);
-    --accent-electric: #8b5cf6;
+    --accent-electric: #ea00ff;
   }
 
   body {
+    font-family: 'Clash Display', 'Inter', system-ui, sans-serif;
     background-color: var(--bg-canvas);
     color: #f4f4f5;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
@@ -87,12 +94,12 @@
 
 /* Confident Studio Primary Button */
 .btn-electric {
-  background: #7c3aed;
+  background: #ea00ff;
   transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 .btn-electric:hover {
-  background: #6d28d9;
-  box-shadow: 0 6px 20px -4px rgba(124, 58, 237, 0.45);
+  background: #d000e6;
+  box-shadow: 0 6px 20px -4px rgba(234, 0, 255, 0.45);
 }
 .btn-electric:active {
   transform: translateY(0);

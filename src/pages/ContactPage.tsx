@@ -94,10 +94,10 @@ export const ContactPage: React.FC<ContactPageProps> = ({ settings, onOpenBookin
                 <div>
                   <span className="text-zinc-500 font-mono text-[10px] uppercase block">Official Email</span>
                   <a
-                    href={`mailto:${settings?.contact_email || 'hello@visualwoxx.com'}`}
+                    href={`mailto:${settings?.contact_email || 'contact@visualwoxx.in'}`}
                     className="text-sm font-semibold text-white hover:text-violet-300 transition-colors"
                   >
-                    {settings?.contact_email || 'hello@visualwoxx.com'}
+                    {settings?.contact_email || 'contact@visualwoxx.in'}
                   </a>
                 </div>
               </div>
@@ -124,7 +124,7 @@ export const ContactPage: React.FC<ContactPageProps> = ({ settings, onOpenBookin
                 <div>
                   <span className="text-zinc-500 font-mono text-[10px] uppercase block">Studio Address</span>
                   <span className="text-sm text-zinc-300 font-medium leading-relaxed block">
-                    {settings?.contact_address || 'Skyline Creative Quarter, Kochi, Kerala, India'}
+                    {settings?.contact_address || 'Kerala, India'}
                   </span>
                 </div>
               </div>

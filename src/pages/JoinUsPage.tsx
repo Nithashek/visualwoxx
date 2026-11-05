@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import {
-  Send, CheckCircle2, AlertCircle, Briefcase,
-  Globe, FileText, MapPin
+  Send, CheckCircle2, AlertCircle, ArrowLeft, ArrowRight, Sparkles
 } from 'lucide-react';
-import { InstagramIcon, LinkedinIcon } from '../components/SocialIcons';
 import confetti from 'canvas-confetti';
 import { submitFreelancerApplication } from '../services/api';
 
 export const JoinUsPage: React.FC = () => {
+  const [currentStep, setCurrentStep] = useState(1);
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -52,6 +51,12 @@ export const JoinUsPage: React.FC = () => {
     e.preventDefault();
     setError(null);
 
+    if (currentStep < 3) {
+      setCurrentStep((step) => step + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
     setLoading(true);
     try {
       await submitFreelancerApplication({
@@ -76,7 +81,7 @@ export const JoinUsPage: React.FC = () => {
         particleCount: 80,
         spread: 60,
         origin: { y: 0.6 },
-        colors: ['#7c3aed', '#a78bfa', '#ffffff']
+        colors: ['#ea00ff', '#f472ff', '#ffffff']
       });
     } catch (err: any) {
       setError(err.message || 'Failed to submit application. Please check your details.');
@@ -87,6 +92,7 @@ export const JoinUsPage: React.FC = () => {
 
   const handleReset = () => {
     setSubmitted(false);
+    setCurrentStep(1);
     setFullName('');
     setEmail('');
     setPhone('');
@@ -101,40 +107,62 @@ export const JoinUsPage: React.FC = () => {
   };
 
   return (
-    <div className="relative pt-28 pb-20 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto space-y-16">
-      {/* Hero Heading */}
+    <div className="relative pt-28 pb-20 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto space-y-10">
+      {/* Application Intro */}
       <div className="text-center max-w-3xl mx-auto space-y-4 relative z-10">
-        <span className="text-xs font-mono text-violet-400 uppercase tracking-widest block">
-          Creative Network
+        <span className="text-xs font-mono text-[#ea00ff] uppercase tracking-[0.22em] block">
+          Freelancer Application
         </span>
-
         <h1 className="text-4xl sm:text-6xl font-black font-display text-white tracking-tight leading-tight">
-          YOUR CREATIVITY HAS A PLACE HERE.
+          GROW WITH OUR CREATIVE COLLECTIVE.
         </h1>
-
         <p className="text-base sm:text-lg text-zinc-300 leading-relaxed">
-          We're building a team of creative minds who love turning ideas into reality. If you have the skills, passion, and creativity to create something meaningful, we'd love to hear from you.
+          Share your skills, experience, and portfolio. We’ll reach out when a project fits your creative strengths.
         </p>
       </div>
 
-      {/* Perks Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10 max-w-4xl mx-auto">
-        <div className="p-6 rounded-2xl bg-zinc-900 border border-white/10 space-y-2">
-          <span className="text-xs font-mono text-violet-400">01 / PROJECTS</span>
-          <h4 className="text-sm font-bold text-white">Commercial & Festival Productions</h4>
-          <p className="text-xs text-zinc-400 leading-relaxed">Collaborate on large-scale event shoots, brand identity packages, and cinematic edits.</p>
+      {/* Three-Stage Progress */}
+      <div className="max-w-3xl mx-auto relative z-10">
+        <div className="grid grid-cols-3 gap-3 relative" aria-label="Application progress">
+          <div className="absolute left-[16.67%] right-[16.67%] top-5 h-px bg-white/10" />
+          <div className={`absolute left-[16.67%] top-5 h-px bg-[#ea00ff] transition-all ${
+            currentStep === 1 ? 'w-0' : currentStep === 2 ? 'w-[33.33%]' : 'w-[66.66%]'
+          }`} />
+          {[
+            { number: 1, title: 'Basic Profile' },
+            { number: 2, title: 'Creative Skills' },
+            { number: 3, title: 'Portfolio' },
+          ].map((step) => {
+            const isComplete = currentStep > step.number;
+            const isCurrent = currentStep === step.number;
+            return (
+              <div key={step.number} aria-current={isCurrent ? 'step' : undefined} className="relative z-10 flex flex-col items-center gap-2 text-center">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold border transition-colors ${
+                  isCurrent || isComplete
+                    ? 'bg-[#ea00ff] border-[#ea00ff] text-white'
+                    : 'bg-zinc-900 border-white/10 text-zinc-500'
+                }`}>
+                  {isComplete ? <CheckCircle2 className="w-5 h-5" /> : step.number}
+                </div>
+                <span className={`text-[10px] sm:text-xs font-semibold ${isCurrent ? 'text-white' : 'text-zinc-500'}`}>
+                  {step.title}
+                </span>
+              </div>
+            );
+          })}
         </div>
+      </div>
 
-        <div className="p-6 rounded-2xl bg-zinc-900 border border-white/10 space-y-2">
-          <span className="text-xs font-mono text-violet-400">02 / WORKFLOW</span>
-          <h4 className="text-sm font-bold text-white">Clear Scope & Prompt Terms</h4>
-          <p className="text-xs text-zinc-400 leading-relaxed">Defined project briefs, respectful compensation, and organized milestones.</p>
+      {/* Creative Partnership Intro Card */}
+      <div className="max-w-3xl mx-auto rounded-2xl border border-[#ea00ff]/20 bg-gradient-to-br from-[#ea00ff]/10 via-zinc-900 to-zinc-900 p-5 sm:p-7 flex gap-4 items-start relative z-10">
+        <div className="w-11 h-11 rounded-xl bg-[#ea00ff]/15 border border-[#ea00ff]/20 flex items-center justify-center text-[#ea00ff] shrink-0">
+          <Sparkles className="w-5 h-5" />
         </div>
-
-        <div className="p-6 rounded-2xl bg-zinc-900 border border-white/10 space-y-2">
-          <span className="text-xs font-mono text-violet-400">03 / NETWORK</span>
-          <h4 className="text-sm font-bold text-white">Creative Collective</h4>
-          <p className="text-xs text-zinc-400 leading-relaxed">Connect with directors, motion designers, and cinema crew across regional hubs.</p>
+        <div className="space-y-1.5">
+          <p className="text-sm sm:text-base font-bold text-white">A better place for good creative work.</p>
+          <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">
+            Join a flexible network of independent creatives, collaborate across disciplines, and bring meaningful ideas to life.
+          </p>
         </div>
       </div>
 
@@ -185,7 +213,7 @@ export const JoinUsPage: React.FC = () => {
             )}
 
             {/* Personal Details */}
-            <div className="space-y-4">
+            {currentStep === 1 && <div className="space-y-4">
               <span className="text-xs font-mono uppercase tracking-wider text-zinc-400 block border-b border-white/[0.08] pb-1.5">
                 01. Personal Information
               </span>
@@ -247,10 +275,10 @@ export const JoinUsPage: React.FC = () => {
                   />
                 </div>
               </div>
-            </div>
+            </div>}
 
             {/* Skills & Experience */}
-            <div className="space-y-4 pt-2">
+            {currentStep === 2 && <div className="space-y-4 pt-2">
               <span className="text-xs font-mono uppercase tracking-wider text-zinc-400 block border-b border-white/[0.08] pb-1.5">
                 02. Creative Disciplines & Experience
               </span>
@@ -313,9 +341,10 @@ export const JoinUsPage: React.FC = () => {
                   })}
                 </div>
               </div>
-            </div>
+            </div>}
 
             {/* Links & Portfolio */}
+            {currentStep === 3 && <>
             <div className="space-y-4 pt-2">
               <span className="text-xs font-mono uppercase tracking-wider text-zinc-400 block border-b border-white/[0.08] pb-1.5">
                 03. Portfolio & Social Links
@@ -431,27 +460,46 @@ export const JoinUsPage: React.FC = () => {
                 />
               </div>
             </div>
+            </>}
 
-            {/* Submission Button */}
-            <div className="pt-4 border-t border-white/[0.08]">
+            {/* Step Navigation */}
+            <div className="pt-4 border-t border-white/[0.08] flex items-center justify-between gap-3">
+              {currentStep > 1 ? (
+                <button
+                  type="button"
+                  onClick={() => setCurrentStep((step) => step - 1)}
+                  className="px-5 py-3 rounded-xl border border-white/10 text-zinc-300 hover:text-white hover:bg-white/5 flex items-center gap-2 transition-colors"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Back
+                </button>
+              ) : <span />}
+
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full btn-electric flex items-center justify-center gap-2 py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider text-white disabled:opacity-50"
+                className="btn-electric px-6 py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider text-white disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <span>Submitting Application...</span>
+                ) : currentStep < 3 ? (
+                  <>
+                    <span>Next Phase</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
                 ) : (
                   <>
                     <Send className="w-4 h-4" />
-                    <span>Submit Freelancer Application</span>
+                    <span>Submit Application</span>
                   </>
                 )}
               </button>
-              <p className="text-[10px] text-zinc-500 text-center mt-2 font-mono">
+            </div>
+            {currentStep === 3 && (
+              <p className="text-[10px] text-zinc-500 text-center font-mono">
                 Candidate data remains private and is reviewed only by Visual Woxx recruitment leads.
               </p>
-            </div>
+            )}
           </form>
         )}
       </div>

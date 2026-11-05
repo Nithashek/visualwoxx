@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, ArrowUpRight, Shield } from 'lucide-react';
+import { Menu, X, Shield } from 'lucide-react';
 
 interface NavbarProps {
   currentPage: string;
   onNavigate: (page: string, params?: any) => void;
-  onOpenBooking: (serviceName?: string) => void;
+  onOpenBooking: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate, onOpenBooking }) => {
@@ -22,10 +22,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate, onOpenB
   const navLinks = [
     { id: 'home', label: 'Home' },
     { id: 'about', label: 'About' },
-    { id: 'services', label: 'Services' },
     { id: 'portfolio', label: 'Portfolio' },
-    { id: 'book', label: 'Book an Appointment' },
-    { id: 'join-us', label: 'Join Us' },
+    { id: 'join-us', label: 'Freelance' },
     { id: 'contact', label: 'Contact' },
   ];
 
@@ -80,7 +78,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate, onOpenB
             })}
           </nav>
 
-          {/* Action CTAs & Admin Shortcut */}
+          {/* Admin Shortcut */}
           <div className="hidden lg:flex items-center gap-3">
             <button
               onClick={() => onNavigate('admin')}
@@ -89,13 +87,11 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate, onOpenB
             >
               <Shield className="w-4 h-4" />
             </button>
-
             <button
-              onClick={() => onOpenBooking()}
-              className="btn-electric flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider text-white"
+              onClick={onOpenBooking}
+              className="px-5 py-2.5 rounded-full bg-[#ea00ff] hover:bg-[#d000e6] text-xs font-bold uppercase tracking-wider text-white transition-colors"
             >
-              <span>Start a Project</span>
-              <ArrowUpRight className="w-3.5 h-3.5" />
+              Book an Appointment
             </button>
           </div>
 
@@ -141,18 +137,6 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate, onOpenB
               </button>
             ))}
 
-            <div className="pt-4 mt-2 border-t border-white/10 flex flex-col gap-3">
-              <button
-                onClick={() => {
-                  onOpenBooking();
-                  setMobileMenuOpen(false);
-                }}
-                className="w-full btn-electric py-3 rounded-xl text-xs font-bold uppercase tracking-wider text-white flex items-center justify-center gap-2"
-              >
-                <span>Start a Project</span>
-                <ArrowUpRight className="w-4 h-4" />
-              </button>
-            </div>
           </div>
         </div>
       )}

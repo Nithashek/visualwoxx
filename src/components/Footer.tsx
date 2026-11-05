@@ -12,25 +12,10 @@ interface FooterProps {
 export const Footer: React.FC<FooterProps> = ({ settings, onNavigate, onOpenBooking }) => {
   const [legalModal, setLegalModal] = useState<'privacy' | 'terms' | null>(null);
 
-  const servicesList = [
-    { title: 'Graphic Design', slug: 'graphic-design' },
-    { title: 'Event Posters & Branding', slug: 'event-posters-and-branding' },
-    { title: 'Photography', slug: 'photography' },
-    { title: 'Videography', slug: 'videography' },
-    { title: 'Highlight Videos', slug: 'highlight-videos' },
-    { title: 'Reels & Short Videos', slug: 'reels-and-short-videos' },
-    { title: 'Brochures & Publications', slug: 'brochures-and-digital-publications' },
-    { title: 'Magazine Design', slug: 'magazine-design' },
-    { title: 'Product Shoots', slug: 'product-shoots' },
-    { title: 'Packaging Design', slug: 'packaging-design' },
-    { title: 'Social Media Content', slug: 'social-media-content' },
-    { title: 'Custom Creative Solutions', slug: 'custom-creative-solutions' },
-  ];
-
   return (
     <footer className="relative bg-black border-t border-white/[0.08] text-zinc-400 pt-16 pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-white/[0.08]">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b border-white/[0.08]">
           {/* Brand Info */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center gap-3">
@@ -52,7 +37,7 @@ export const Footer: React.FC<FooterProps> = ({ settings, onNavigate, onOpenBook
 
             <p className="text-xs sm:text-sm text-zinc-400 max-w-sm leading-relaxed">
               {settings?.company_description ||
-                'Visual Woxx is a creative digital solutions studio providing photography, videography, graphic design, and brand experiences for events, brands, and businesses.'}
+                'We turn imagination into visuals that make an impact. From creative concepts to captivating content, Visual Woxx brings design, media, and storytelling together to make every vision impossible to ignore.'}
             </p>
 
             {/* Social Links */}
@@ -150,34 +135,6 @@ export const Footer: React.FC<FooterProps> = ({ settings, onNavigate, onOpenBook
             </ul>
           </div>
 
-          {/* Creative Services List */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-mono uppercase tracking-widest text-white border-b border-white/[0.08] pb-2">
-              Services
-            </h4>
-            <ul className="space-y-1.5 text-xs">
-              {servicesList.slice(0, 7).map((s) => (
-                <li key={s.slug}>
-                  <button
-                    onClick={() => onNavigate('services', { service: s.slug })}
-                    className="hover:text-white transition-colors text-zinc-400 hover:underline"
-                  >
-                    {s.title}
-                  </button>
-                </li>
-              ))}
-              <li>
-                <button
-                  onClick={() => onNavigate('services')}
-                  className="text-violet-400 hover:text-white font-medium flex items-center gap-1 mt-1"
-                >
-                  <span>+ All 12 Services</span>
-                  <ArrowUpRight className="w-3 h-3" />
-                </button>
-              </li>
-            </ul>
-          </div>
-
           {/* Contact Details */}
           <div className="space-y-3">
             <h4 className="text-xs font-mono uppercase tracking-widest text-white border-b border-white/[0.08] pb-2">
@@ -188,8 +145,8 @@ export const Footer: React.FC<FooterProps> = ({ settings, onNavigate, onOpenBook
                 <Mail className="w-3.5 h-3.5 text-violet-400 shrink-0 mt-0.5" />
                 <div>
                   <span className="block text-zinc-500 text-[10px] uppercase font-mono">Email</span>
-                  <a href={`mailto:${settings?.contact_email || 'hello@visualwoxx.com'}`} className="hover:text-white font-medium break-all">
-                    {settings?.contact_email || 'hello@visualwoxx.com'}
+                  <a href={`mailto:${settings?.contact_email || 'contact@visualwoxx.in'}`} className="hover:text-white font-medium break-all">
+                    {settings?.contact_email || 'contact@visualwoxx.in'}
                   </a>
                 </div>
               </div>
@@ -209,18 +166,11 @@ export const Footer: React.FC<FooterProps> = ({ settings, onNavigate, onOpenBook
                 <div>
                   <span className="block text-zinc-500 text-[10px] uppercase font-mono">Studio Location</span>
                   <span className="text-zinc-400">
-                    {settings?.contact_address || 'Skyline Creative Quarter, Kochi, Kerala, India'}
+                    {settings?.contact_address || 'Kerala, India'}
                   </span>
                 </div>
               </div>
 
-              <button
-                onClick={() => onOpenBooking()}
-                className="w-full mt-2 py-2 px-3 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white border border-white/10 text-xs font-medium text-center transition-all flex items-center justify-center gap-1.5"
-              >
-                <span>Request Custom Quote</span>
-                <ArrowUpRight className="w-3.5 h-3.5" />
-              </button>
             </div>
           </div>
         </div>
