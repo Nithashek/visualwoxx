@@ -7,12 +7,12 @@ import {
   ChevronRight, ChevronLeft, Phone, Mail, MapPin, Globe,
   Play, DollarSign, Briefcase, FileText, CheckSquare,
   MessageSquare, Video, ArrowUpRight, PanelLeftClose, PanelLeftOpen,
-  Menu, X
+  Menu, X, Sliders, BarChart3
 } from 'lucide-react';
 import {
   AdminUser, DashboardStats, FreelancerApplication, Freelancer,
   PortfolioProject, ClientReview, Inquiry, Appointment, Project,
-  Client
+  Client, SiteSettings
 } from '../../types';
 import {
   fetchDashboardStats, fetchAppointments, createAppointment,
@@ -22,7 +22,7 @@ import {
   updateFreelancerApplication, fetchFreelancers, updateFreelancer,
   fetchReviews, createReview, updateReview, deleteReview,
   fetchPortfolio, createPortfolioProject, updatePortfolioProject,
-  deletePortfolioProject
+  deletePortfolioProject, fetchSiteSettings, updateSiteSettings
 } from '../../services/api';
 
 interface AdminUnifiedPageProps {
@@ -71,6 +71,14 @@ export const AdminUnifiedPage: React.FC<AdminUnifiedPageProps> = ({
   const [freelancers, setFreelancers] = useState<Freelancer[]>([]);
   const [reviews, setReviews] = useState<ClientReview[]>([]);
   const [portfolioProjects, setPortfolioProjects] = useState<PortfolioProject[]>([]);
+  const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
+
+  // Homepage Studio Stats Config Modal State
+  const [statsModalOpen, setStatsModalOpen] = useState(false);
+  const [statCustomers, setStatCustomers] = useState('');
+  const [statProjects, setStatProjects] = useState('');
+  const [statFreelancers, setStatFreelancers] = useState('');
+  const [statSyncMode, setStatSyncMode] = useState<'live' | 'custom'>('live');
 
   const [loading, setLoading] = useState(false);
   const [alertMsg, setAlertMsg] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
@@ -93,8 +101,9 @@ export const AdminUnifiedPage: React.FC<AdminUnifiedPageProps> = ({
       fetchFreelancerApplications().catch(() => []),
       fetchFreelancers().catch(() => []),
       fetchReviews(true).catch(() => []),
-      fetchPortfolio(true).catch(() => [])
-    ]).then(([s, apts, prjs, cls, fApps, fls, revs, port]) => {
+      fetchPortfolio(true).catch(() => []),
+      fetchSiteSettings().catch(() => null)
+    ]).then(([s, apts, prjs, cls, fApps, fls, revs, port, sSettings]) => {
       if (s) setStats(s);
       setAppointments(apts);
       setProjects(prjs);
@@ -103,6 +112,13 @@ export const AdminUnifiedPage: React.FC<AdminUnifiedPageProps> = ({
       setFreelancers(fls);
       setReviews(revs);
       setPortfolioProjects(port);
+      if (sSettings) {
+        setSiteSettings(sSettings);
+        setStatCustomers(sSettings.happy_customers_count || '');
+        setStatProjects(sSettings.completed_projects_count || '');
+        setStatFreelancers(sSettings.freelancers_count || '');
+        setStatSyncMode((sSettings.stats_mode as 'live' | 'custom') || 'live');
+      }
       setLoading(false);
     });
   };
@@ -500,6 +516,27 @@ export const AdminUnifiedPage: React.FC<AdminUnifiedPageProps> = ({
       loadAllData();
     } catch (err: any) {
       showNotification(err.message || 'Failed to update review status', 'error');
+    }
+  };
+
+  const handleSaveStudioStats = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const liveCust = `${clients.length}+`;
+      const livePrj = `${completedProjectsList.length}+`;
+      const liveFl = `${freelancers.length}+`;
+
+      await updateSiteSettings({
+        stats_mode: statSyncMode,
+        happy_customers_count: statSyncMode === 'custom' ? (statCustomers || liveCust) : liveCust,
+        completed_projects_count: statSyncMode === 'custom' ? (statProjects || livePrj) : livePrj,
+        freelancers_count: statSyncMode === 'custom' ? (statFreelancers || liveFl) : liveFl
+      });
+      showNotification('Homepage studio stats updated successfully!');
+      setStatsModalOpen(false);
+      loadAllData();
+    } catch (err: any) {
+      showNotification(err.message || 'Failed to save stats settings', 'error');
     }
   };
 
@@ -1029,6 +1066,81 @@ export const AdminUnifiedPage: React.FC<AdminUnifiedPageProps> = ({
                 </div>
                 <div className="text-[11px] text-zinc-500 font-mono">
                   Active roster talent
+                </div>
+              </div>
+            </div>
+
+            {/* Homepage Studio Counters Widget (Admin Controlled) */}
+            <div className="p-6 rounded-3xl bg-gradient-to-r from-purple-950/40 via-dark-900 to-dark-900 border border-purple-800/40 shadow-xl space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-purple-600/20 border border-purple-500/30 flex items-center justify-center text-purple-400">
+                    <BarChart3 className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-base font-bold text-white font-display">
+                        Homepage Studio Counters
+                      </h3>
+                      <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
+                        statSyncMode === 'custom'
+                          ? 'bg-amber-950/50 text-amber-300 border-amber-800/40'
+                          : 'bg-emerald-950/50 text-emerald-300 border-emerald-800/40'
+                      }`}>
+                        {statSyncMode === 'custom' ? 'Custom Override Mode' : 'Live DB Auto-Sync'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-zinc-400">
+                      These numbers are displayed live on the public homepage hero section.
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStatCustomers(siteSettings?.happy_customers_count || `${clients.length}+`);
+                    setStatProjects(siteSettings?.completed_projects_count || `${completedProjectsList.length}+`);
+                    setStatFreelancers(siteSettings?.freelancers_count || `${freelancers.length}+`);
+                    setStatSyncMode((siteSettings?.stats_mode as 'live' | 'custom') || 'live');
+                    setStatsModalOpen(true);
+                  }}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition-all shadow-glow-subtle self-start sm:self-auto"
+                >
+                  <Sliders className="w-3.5 h-3.5" />
+                  <span>Configure Homepage Counters</span>
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 border-t border-purple-900/20">
+                <div className="p-3.5 rounded-xl bg-dark-950/60 border border-purple-900/20">
+                  <span className="text-[11px] text-zinc-400 block font-mono uppercase">Happy Customers</span>
+                  <div className="text-2xl font-black text-[#ea00ff] mt-0.5 font-display">
+                    {siteSettings?.happy_customers_count || `${clients.length}+`}
+                  </div>
+                  <span className="text-[10px] text-zinc-500">
+                    {statSyncMode === 'custom' ? 'Manual override' : `Synced with ${clients.length} clients in DB`}
+                  </span>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-dark-950/60 border border-purple-900/20">
+                  <span className="text-[11px] text-zinc-400 block font-mono uppercase">Completed Projects</span>
+                  <div className="text-2xl font-black text-[#ea00ff] mt-0.5 font-display">
+                    {siteSettings?.completed_projects_count || `${completedProjectsList.length}+`}
+                  </div>
+                  <span className="text-[10px] text-zinc-500">
+                    {statSyncMode === 'custom' ? 'Manual override' : `Synced with ${completedProjectsList.length} completed projects in DB`}
+                  </span>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-dark-950/60 border border-purple-900/20">
+                  <span className="text-[11px] text-zinc-400 block font-mono uppercase">Freelancers</span>
+                  <div className="text-2xl font-black text-[#ea00ff] mt-0.5 font-display">
+                    {siteSettings?.freelancers_count || `${freelancers.length}+`}
+                  </div>
+                  <span className="text-[10px] text-zinc-500">
+                    {statSyncMode === 'custom' ? 'Manual override' : `Synced with ${freelancers.length} active freelancers in DB`}
+                  </span>
                 </div>
               </div>
             </div>
@@ -2614,6 +2726,172 @@ export const AdminUnifiedPage: React.FC<AdminUnifiedPageProps> = ({
                   className="btn-electric px-5 py-2 rounded-xl text-xs font-bold text-white shadow-glow-subtle"
                 >
                   {editingPort ? 'Save Changes' : 'Publish to Main Page'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ------------------------------------------------------------- */}
+      {/* MODAL: HOMEPAGE STUDIO COUNTERS CONFIGURATION                  */}
+      {/* ------------------------------------------------------------- */}
+      {statsModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+          <div className="bg-dark-900 border border-purple-900/40 rounded-3xl max-w-xl w-full p-6 text-zinc-200 shadow-2xl space-y-6">
+            <div className="flex items-center justify-between border-b border-purple-900/30 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-purple-600/20 border border-purple-500/30 flex items-center justify-center text-purple-400">
+                  <Sliders className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-white font-display">
+                    Homepage Studio Counters
+                  </h3>
+                  <p className="text-xs text-zinc-400">
+                    Control the 3 counters displayed on the public homepage hero section
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setStatsModalOpen(false)}
+                className="p-1.5 rounded-lg bg-dark-950 text-zinc-400 hover:text-white border border-purple-900/30"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveStudioStats} className="space-y-5">
+              {/* Sync Mode Selector */}
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-zinc-300 block font-mono uppercase">
+                  Data Synchronization Mode
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setStatSyncMode('live')}
+                    className={`p-3.5 rounded-xl border text-left transition-all ${
+                      statSyncMode === 'live'
+                        ? 'bg-purple-900/30 border-purple-500 text-white shadow-glow-subtle'
+                        : 'bg-dark-950 border-purple-900/30 text-zinc-400 hover:text-white'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-bold">Auto Live Sync</span>
+                      {statSyncMode === 'live' && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
+                    </div>
+                    <p className="text-[11px] text-zinc-400">
+                      Calculates directly from your database records in real-time
+                    </p>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setStatSyncMode('custom')}
+                    className={`p-3.5 rounded-xl border text-left transition-all ${
+                      statSyncMode === 'custom'
+                        ? 'bg-purple-900/30 border-purple-500 text-white shadow-glow-subtle'
+                        : 'bg-dark-950 border-purple-900/30 text-zinc-400 hover:text-white'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-bold">Custom Override</span>
+                      {statSyncMode === 'custom' && <CheckCircle2 className="w-4 h-4 text-purple-400" />}
+                    </div>
+                    <p className="text-[11px] text-zinc-400">
+                      Set custom display text (e.g. 50+, 100+, 500+)
+                    </p>
+                  </button>
+                </div>
+              </div>
+
+              {/* Mode-specific content */}
+              {statSyncMode === 'live' ? (
+                <div className="p-4 rounded-2xl bg-dark-950/80 border border-purple-900/30 space-y-3">
+                  <div className="flex items-center gap-2 text-xs text-emerald-400 font-semibold">
+                    <Sparkles className="w-4 h-4" />
+                    <span>Real-time values from your database:</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3 text-center">
+                    <div className="p-2.5 rounded-xl bg-dark-900 border border-purple-900/20">
+                      <div className="text-xl font-black text-[#ea00ff]">{clients.length}+</div>
+                      <div className="text-[10px] text-zinc-400 font-mono mt-0.5">Happy Customers</div>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-dark-900 border border-purple-900/20">
+                      <div className="text-xl font-black text-[#ea00ff]">{completedProjectsList.length}+</div>
+                      <div className="text-[10px] text-zinc-400 font-mono mt-0.5">Completed Projects</div>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-dark-900 border border-purple-900/20">
+                      <div className="text-xl font-black text-[#ea00ff]">{freelancers.length}+</div>
+                      <div className="text-[10px] text-zinc-400 font-mono mt-0.5">Freelancers</div>
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-zinc-500">
+                    Whenever you add or complete projects, clients, or freelancers in admin, these numbers update automatically on the website.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3 p-4 rounded-2xl bg-dark-950/80 border border-purple-900/30">
+                  <p className="text-xs text-zinc-300">
+                    Enter the exact counter text to show on the homepage:
+                  </p>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-xs text-zinc-400 block mb-1">
+                        1. Happy Customers Counter
+                      </label>
+                      <input
+                        type="text"
+                        value={statCustomers}
+                        onChange={(e) => setStatCustomers(e.target.value)}
+                        placeholder="e.g. 5+ or 25+"
+                        className="w-full px-3 py-2 rounded-xl bg-dark-900 border border-purple-900/40 text-white text-xs focus:outline-none focus:border-purple-500 font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-zinc-400 block mb-1">
+                        2. Completed Projects Counter
+                      </label>
+                      <input
+                        type="text"
+                        value={statProjects}
+                        onChange={(e) => setStatProjects(e.target.value)}
+                        placeholder="e.g. 10+ or 50+"
+                        className="w-full px-3 py-2 rounded-xl bg-dark-900 border border-purple-900/40 text-white text-xs focus:outline-none focus:border-purple-500 font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-zinc-400 block mb-1">
+                        3. Freelancers Connected Counter
+                      </label>
+                      <input
+                        type="text"
+                        value={statFreelancers}
+                        onChange={(e) => setStatFreelancers(e.target.value)}
+                        placeholder="e.g. 100+ or 250+"
+                        className="w-full px-3 py-2 rounded-xl bg-dark-900 border border-purple-900/40 text-white text-xs focus:outline-none focus:border-purple-500 font-mono"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="pt-3 border-t border-purple-900/30 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setStatsModalOpen(false)}
+                  className="px-4 py-2 rounded-xl bg-dark-950 hover:bg-zinc-800 text-zinc-400 text-xs"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn-electric px-5 py-2 rounded-xl text-xs font-bold text-white shadow-glow-subtle flex items-center gap-1.5"
+                >
+                  <Save className="w-3.5 h-3.5" />
+                  <span>Save Counters</span>
                 </button>
               </div>
             </form>

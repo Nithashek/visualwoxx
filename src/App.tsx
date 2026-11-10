@@ -7,7 +7,6 @@ import { ProjectDetailModal } from './components/ProjectDetailModal';
 // Public Pages
 import { HomePage } from './pages/HomePage';
 import { AboutPage } from './pages/AboutPage';
-import { ServicesPage } from './pages/ServicesPage';
 import { PortfolioPage } from './pages/PortfolioPage';
 import { BookAppointmentPage } from './pages/BookAppointmentPage';
 import { JoinUsPage } from './pages/JoinUsPage';
@@ -91,8 +90,14 @@ export const App: React.FC = () => {
     return (
       <AdminUnifiedPage
         user={adminUser}
-        onLogout={handleLogout}
-        onBackToSite={() => handleNavigate('home')}
+        onLogout={() => {
+          reloadAllData();
+          handleLogout();
+        }}
+        onBackToSite={() => {
+          reloadAllData();
+          handleNavigate('home');
+        }}
       />
     );
   }
@@ -122,15 +127,6 @@ export const App: React.FC = () => {
             settings={settings}
             onNavigate={handleNavigate}
             onOpenBooking={handleOpenBooking}
-          />
-        )}
-
-        {currentPage === 'services' && (
-          <ServicesPage
-            services={services}
-            initialSelectedService={pageParams?.service}
-            onOpenBooking={handleOpenBooking}
-            onNavigate={handleNavigate}
           />
         )}
 

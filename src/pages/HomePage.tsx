@@ -3,7 +3,7 @@ import {
   ArrowUpRight, ChevronRight, ChevronLeft, Star, Quote, CheckCircle2
 } from 'lucide-react';
 import { SiteSettings, ClientReview } from '../types';
-import { fetchReviews } from '../services/api';
+import { fetchReviews, fetchDashboardStats } from '../services/api';
 
 interface HomePageProps {
   settings: SiteSettings | null;
@@ -75,10 +75,34 @@ export const HomePage: React.FC<HomePageProps> = ({
   onOpenBooking,
 }) => {
   const [reviews, setReviews] = useState<ClientReview[]>(defaultReviews);
+  const [stats, setStats] = useState<{
+    totalClients: number;
+    completedProjects: number;
+    totalFreelancers: number;
+  }>({
+    totalClients: 0,
+    completedProjects: 0,
+    totalFreelancers: 0
+  });
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
   const touchStartX = useRef<number | null>(null);
+
+  // Fetch live stats from Admin backend
+  useEffect(() => {
+    fetchDashboardStats()
+      .then((data) => {
+        if (data) {
+          setStats({
+            totalClients: Number(data.totalClients) || 0,
+            completedProjects: Number(data.completedProjects) || 0,
+            totalFreelancers: Number(data.totalFreelancers) || 0
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // Fetch reviews dynamically from API - strictly controlled by admin
   useEffect(() => {
@@ -236,23 +260,39 @@ export const HomePage: React.FC<HomePageProps> = ({
             </button>
           </div>
 
-          {/* Studio Stats */}
-          <div className="pt-10 max-w-5xl mx-auto text-center">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
-              <div className="space-y-1">
-                <p className="text-3xl sm:text-4xl font-black text-[#ea00ff]">5+</p>
-                <p className="text-sm text-zinc-300">Happy Customers</p>
+          {/* Studio Stats - Connected with Admin */}
+          {(() => {
+            const happyCustomersDisplay = settings?.stats_mode === 'custom' && settings?.happy_customers_count
+              ? settings.happy_customers_count
+              : (settings?.happy_customers_count || (stats.totalClients > 0 ? `${stats.totalClients}+` : '5+'));
+
+            const completedProjectsDisplay = settings?.stats_mode === 'custom' && settings?.completed_projects_count
+              ? settings.completed_projects_count
+              : (settings?.completed_projects_count || (stats.completedProjects > 0 ? `${stats.completedProjects}+` : '10+'));
+
+            const freelancersDisplay = settings?.stats_mode === 'custom' && settings?.freelancers_count
+              ? settings.freelancers_count
+              : (settings?.freelancers_count || (stats.totalFreelancers > 0 ? `${stats.totalFreelancers}+` : '100+'));
+
+            return (
+              <div className="pt-10 max-w-5xl mx-auto text-center">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+                  <div className="space-y-1">
+                    <p className="text-3xl sm:text-4xl font-black text-[#ea00ff]">{happyCustomersDisplay}</p>
+                    <p className="text-sm text-zinc-300">Happy Customers</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-3xl sm:text-4xl font-black text-[#ea00ff]">{completedProjectsDisplay}</p>
+                    <p className="text-sm text-zinc-300">Completed Projects</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-3xl sm:text-4xl font-black text-[#ea00ff]">{freelancersDisplay}</p>
+                    <p className="text-sm text-zinc-300">Freelancers</p>
+                  </div>
+                </div>
               </div>
-              <div className="space-y-1">
-                <p className="text-3xl sm:text-4xl font-black text-[#ea00ff]">10+</p>
-                <p className="text-sm text-zinc-300">Completed Projects</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-3xl sm:text-4xl font-black text-[#ea00ff]">100+</p>
-                <p className="text-sm text-zinc-300">Freelancers</p>
-              </div>
-            </div>
-          </div>
+            );
+          })()}
         </div>
       </section>
 
