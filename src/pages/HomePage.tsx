@@ -80,20 +80,16 @@ export const HomePage: React.FC<HomePageProps> = ({
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
   const touchStartX = useRef<number | null>(null);
 
-  // Fetch reviews dynamically from API
+  // Fetch reviews dynamically from API - strictly controlled by admin
   useEffect(() => {
     fetchReviews()
       .then((data) => {
-        if (data && data.length > 0) {
-          if (data.length < 4) {
-            setReviews([...data, ...defaultReviews.slice(data.length)]);
-          } else {
-            setReviews(data);
-          }
+        if (Array.isArray(data)) {
+          setReviews(data);
         }
       })
-      .catch(() => {
-        // Fallback already preset
+      .catch((err) => {
+        console.error('Failed to load reviews from API:', err);
       });
   }, []);
 
@@ -151,6 +147,17 @@ export const HomePage: React.FC<HomePageProps> = ({
 
   const getCardStyle = (index: number): React.CSSProperties => {
     const N = reviews.length;
+    if (N === 0) return {};
+    if (N === 1) {
+      return {
+        transform: `translateX(0px) scale(${isMobile ? 1.05 : 1.18})`,
+        zIndex: 30,
+        opacity: 1,
+        filter: 'brightness(1)',
+        pointerEvents: 'auto'
+      };
+    }
+
     let diff = (index - activeIndex + N) % N;
     if (diff > N / 2) diff -= N;
 
@@ -252,130 +259,138 @@ export const HomePage: React.FC<HomePageProps> = ({
       {/* =========================================================
           CLIENT REVIEWS COVERFLOW CAROUSEL (3D Active Card Scaled)
          ========================================================= */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-10 relative z-10">
-        <div className="text-center max-w-3xl mx-auto space-y-2">
-          <h2 className="text-3xl sm:text-5xl font-black font-display text-white tracking-tight">
-            What Clients Say
-          </h2>
-        </div>
-
-        {/* 3D Coverflow Container */}
-        <div
-          className="relative w-full max-w-5xl mx-auto h-[480px] sm:h-[530px] flex items-center justify-center overflow-hidden select-none"
-          onMouseEnter={() => setIsPaused(true)}
-          onMouseLeave={() => setIsPaused(false)}
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-        >
-          {/* Ambient radial lighting behind active card */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-brand-purple/20 blur-3xl rounded-full pointer-events-none" />
-
-          {/* Cards Track */}
-          <div className="relative w-full h-full flex items-center justify-center">
-            {reviews.map((review, index) => {
-              const style = getCardStyle(index);
-              const isActive = index === activeIndex;
-
-              return (
-                <div
-                  key={review.id}
-                  onClick={() => setActiveIndex(index)}
-                  style={style}
-                  className={`absolute w-[275px] sm:w-[325px] md:w-[360px] h-[390px] sm:h-[440px] rounded-3xl p-6 sm:p-7 flex flex-col justify-between transition-all duration-500 ease-out cursor-pointer bg-gradient-to-b from-zinc-900/95 via-dark-900 to-dark-950 ${
-                    isActive
-                      ? 'border-2 border-purple-500/80 shadow-[0_-20px_35px_-4px_rgba(0,0,0,0.9),0_28px_45px_-4px_rgba(0,0,0,0.95),0_0_25px_rgba(168,85,247,0.25)] ring-1 ring-brand-neon/40'
-                      : 'border border-white/10 hover:border-white/25 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.7)]'
-                  }`}
-                >
-                  {/* Top Row: Stars & Quote Icon */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5">
-                      <div className="flex text-amber-400">
-                        {Array.from({ length: review.rating || 5 }).map((_, i) => (
-                          <Star key={i} className="w-4 h-4 fill-current drop-shadow-sm" />
-                        ))}
-                      </div>
-                      <span className="text-[10px] font-mono font-bold text-amber-300 bg-amber-950/60 border border-amber-800/40 px-1.5 py-0.5 rounded-full ml-1">
-                        5.0
-                      </span>
-                    </div>
-
-                    <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-brand-neon">
-                      <Quote className="w-4 h-4" />
-                    </div>
-                  </div>
-
-                  {/* Middle: Testimonial Quote */}
-                  <div className="space-y-2 my-auto">
-                    <p className="text-sm sm:text-base text-zinc-100 font-medium leading-relaxed italic line-clamp-6">
-                      “{review.quote}”
-                    </p>
-                  </div>
-
-                  {/* Bottom: Client Details (Name, Designation, Company - No Profile Pic) */}
-                  <div className="pt-4 border-t border-white/10">
-                    <div className="space-y-1">
-                      <h4 className="font-bold text-base text-white font-display leading-tight">
-                        {review.clientName}
-                      </h4>
-                      <p className="text-xs text-brand-neon font-medium leading-tight">
-                        {review.designation}
-                      </p>
-                      {review.company && (
-                        <p className="text-xs text-zinc-400 font-mono leading-tight">
-                          {review.company}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="mt-3 flex items-center justify-between">
-                      <span className="inline-flex items-center gap-1 text-[9px] font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-800/40 px-2 py-0.5 rounded-full">
-                        <CheckCircle2 className="w-3 h-3" /> Verified Client
-                      </span>
-                      <span className="text-[10px] font-mono text-zinc-500">
-                        Production Review
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+      {reviews.length > 0 && (
+        <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-10 relative z-10">
+          <div className="text-center max-w-3xl mx-auto space-y-2">
+            <h2 className="text-3xl sm:text-5xl font-black font-display text-white tracking-tight">
+              What Clients Say
+            </h2>
           </div>
 
-          {/* Floating Navigation Arrows */}
-          <button
-            onClick={handlePrev}
-            aria-label="Previous Review"
-            className="absolute left-2 sm:left-4 z-40 w-11 h-11 rounded-full bg-dark-900/80 hover:bg-brand-purple border border-purple-500/30 text-white backdrop-blur-md flex items-center justify-center shadow-lg transition-all hover:scale-110 active:scale-95"
+          {/* 3D Coverflow Container */}
+          <div
+            className="relative w-full max-w-5xl mx-auto h-[480px] sm:h-[530px] flex items-center justify-center overflow-hidden select-none"
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
           >
-            <ChevronLeft className="w-6 h-6" />
-          </button>
+            {/* Ambient radial lighting behind active card */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-brand-purple/20 blur-3xl rounded-full pointer-events-none" />
 
-          <button
-            onClick={handleNext}
-            aria-label="Next Review"
-            className="absolute right-2 sm:right-4 z-40 w-11 h-11 rounded-full bg-dark-900/80 hover:bg-brand-purple border border-purple-500/30 text-white backdrop-blur-md flex items-center justify-center shadow-lg transition-all hover:scale-110 active:scale-95"
-          >
-            <ChevronRight className="w-6 h-6" />
-          </button>
-        </div>
+            {/* Cards Track */}
+            <div className="relative w-full h-full flex items-center justify-center">
+              {reviews.map((review, index) => {
+                const style = getCardStyle(index);
+                const isActive = index === activeIndex;
 
-        {/* Carousel Pagination Dots */}
-        <div className="flex justify-center items-center gap-2">
-          {reviews.map((_, idx) => (
-            <button
-              key={idx}
-              onClick={() => setActiveIndex(idx)}
-              aria-label={`Go to review ${idx + 1}`}
-              className={`h-2 transition-all rounded-full ${
-                idx === activeIndex
-                  ? 'w-8 bg-brand-neon shadow-glow-subtle'
-                  : 'w-2 bg-white/20 hover:bg-white/40'
-              }`}
-            />
-          ))}
-        </div>
-      </section>
+                return (
+                  <div
+                    key={review.id}
+                    onClick={() => setActiveIndex(index)}
+                    style={style}
+                    className={`absolute w-[275px] sm:w-[325px] md:w-[360px] h-[390px] sm:h-[440px] rounded-3xl p-6 sm:p-7 flex flex-col justify-between transition-all duration-500 ease-out cursor-pointer bg-gradient-to-b from-zinc-900/95 via-dark-900 to-dark-950 ${
+                      isActive
+                        ? 'border-2 border-purple-500/80 shadow-[0_-20px_35px_-4px_rgba(0,0,0,0.9),0_28px_45px_-4px_rgba(0,0,0,0.95),0_0_25px_rgba(168,85,247,0.25)] ring-1 ring-brand-neon/40'
+                        : 'border border-white/10 hover:border-white/25 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.7)]'
+                    }`}
+                  >
+                    {/* Top Row: Stars & Quote Icon */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <div className="flex text-amber-400">
+                          {Array.from({ length: review.rating || 5 }).map((_, i) => (
+                            <Star key={i} className="w-4 h-4 fill-current drop-shadow-sm" />
+                          ))}
+                        </div>
+                        <span className="text-[10px] font-mono font-bold text-amber-300 bg-amber-950/60 border border-amber-800/40 px-1.5 py-0.5 rounded-full ml-1">
+                          5.0
+                        </span>
+                      </div>
+
+                      <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-brand-neon">
+                        <Quote className="w-4 h-4" />
+                      </div>
+                    </div>
+
+                    {/* Middle: Testimonial Quote */}
+                    <div className="space-y-2 my-auto">
+                      <p className="text-sm sm:text-base text-zinc-100 font-medium leading-relaxed italic line-clamp-6">
+                        “{review.quote}”
+                      </p>
+                    </div>
+
+                    {/* Bottom: Client Details (Name, Designation, Company - No Profile Pic) */}
+                    <div className="pt-4 border-t border-white/10">
+                      <div className="space-y-1">
+                        <h4 className="font-bold text-base text-white font-display leading-tight">
+                          {review.clientName}
+                        </h4>
+                        <p className="text-xs text-brand-neon font-medium leading-tight">
+                          {review.designation}
+                        </p>
+                        {review.company && (
+                          <p className="text-xs text-zinc-400 font-mono leading-tight">
+                            {review.company}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="mt-3 flex items-center justify-between">
+                        <span className="inline-flex items-center gap-1 text-[9px] font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-800/40 px-2 py-0.5 rounded-full">
+                          <CheckCircle2 className="w-3 h-3" /> Verified Client
+                        </span>
+                        <span className="text-[10px] font-mono text-zinc-500">
+                          Production Review
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Floating Navigation Arrows (only if more than 1 review) */}
+            {reviews.length > 1 && (
+              <>
+                <button
+                  onClick={handlePrev}
+                  aria-label="Previous Review"
+                  className="absolute left-2 sm:left-4 z-40 w-11 h-11 rounded-full bg-dark-900/80 hover:bg-brand-purple border border-purple-500/30 text-white backdrop-blur-md flex items-center justify-center shadow-lg transition-all hover:scale-110 active:scale-95"
+                >
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
+
+                <button
+                  onClick={handleNext}
+                  aria-label="Next Review"
+                  className="absolute right-2 sm:right-4 z-40 w-11 h-11 rounded-full bg-dark-900/80 hover:bg-brand-purple border border-purple-500/30 text-white backdrop-blur-md flex items-center justify-center shadow-lg transition-all hover:scale-110 active:scale-95"
+                >
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+              </>
+            )}
+          </div>
+
+          {/* Carousel Pagination Dots (only if more than 1 review) */}
+          {reviews.length > 1 && (
+            <div className="flex justify-center items-center gap-2">
+              {reviews.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setActiveIndex(idx)}
+                  aria-label={`Go to review ${idx + 1}`}
+                  className={`h-2 transition-all rounded-full ${
+                    idx === activeIndex
+                      ? 'w-8 bg-brand-neon shadow-glow-subtle'
+                      : 'w-2 bg-white/20 hover:bg-white/40'
+                  }`}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+      )}
 
       {/* =========================================================
           SECTION G: CALL-TO-ACTION SECTION

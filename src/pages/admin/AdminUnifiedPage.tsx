@@ -493,6 +493,16 @@ export const AdminUnifiedPage: React.FC<AdminUnifiedPageProps> = ({
     }
   };
 
+  const handleTogglePublishReview = async (r: ClientReview) => {
+    try {
+      await updateReview(r.id, { isPublished: !r.isPublished });
+      showNotification(r.isPublished ? 'Review set to draft (hidden from site)' : 'Review published live to homepage!');
+      loadAllData();
+    } catch (err: any) {
+      showNotification(err.message || 'Failed to update review status', 'error');
+    }
+  };
+
   // -------------------------------------------------------------
   // HANDLERS: PORTFOLIO
   // -------------------------------------------------------------
@@ -1830,13 +1840,19 @@ export const AdminUnifiedPage: React.FC<AdminUnifiedPageProps> = ({
                         ))}
                       </div>
 
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                        r.isPublished
-                          ? 'bg-emerald-950 text-emerald-300 border border-emerald-800/40'
-                          : 'bg-zinc-800 text-zinc-400'
-                      }`}>
-                        {r.isPublished ? 'Live on Homepage' : 'Draft'}
-                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleTogglePublishReview(r)}
+                        className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border transition-all flex items-center gap-1.5 cursor-pointer ${
+                          r.isPublished
+                            ? 'bg-emerald-950/80 text-emerald-300 border-emerald-800/50 hover:bg-emerald-900/60'
+                            : 'bg-zinc-800 text-zinc-400 border-zinc-700 hover:bg-zinc-700'
+                        }`}
+                        title="Click to toggle Live on Homepage / Draft"
+                      >
+                        <span className={`w-1.5 h-1.5 rounded-full ${r.isPublished ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-500'}`} />
+                        <span>{r.isPublished ? 'Live on Homepage' : 'Draft (Hidden)'}</span>
+                      </button>
                     </div>
 
                     <p className="text-xs text-zinc-200 italic leading-relaxed">
