@@ -809,13 +809,7 @@ export const AdminUnifiedPage: React.FC<AdminUnifiedPageProps> = ({
               </div>
             </div>
           ) : (
-            <div className="flex items-center justify-center">
-              <img
-                src="/logo.jpg"
-                alt="Visual Woxx"
-                className="w-10 h-10 rounded-xl object-cover"
-              />
-            </div>
+            <div />
           )}
 
           {/* Minimize / Expand Toggle Button (Desktop) */}
