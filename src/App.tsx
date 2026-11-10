@@ -14,20 +14,8 @@ import { JoinUsPage } from './pages/JoinUsPage';
 import { ContactPage } from './pages/ContactPage';
 
 // Admin Portal Pages
-import { AdminLayout } from './pages/admin/AdminLayout';
 import { AdminLoginPage } from './pages/admin/AdminLoginPage';
-import { AdminDashboardPage } from './pages/admin/AdminDashboardPage';
-import { AdminInquiriesPage } from './pages/admin/AdminInquiriesPage';
-import { AdminAppointmentsPage } from './pages/admin/AdminAppointmentsPage';
-import { AdminProjectsPage } from './pages/admin/AdminProjectsPage';
-import { AdminClientsPage } from './pages/admin/AdminClientsPage';
-import { AdminFreelancersPage } from './pages/admin/AdminFreelancersPage';
-import { AdminPortfolioPage } from './pages/admin/AdminPortfolioPage';
-import { AdminServicesPage } from './pages/admin/AdminServicesPage';
-import { AdminTeamPage } from './pages/admin/AdminTeamPage';
-import { AdminMessagesPage } from './pages/admin/AdminMessagesPage';
-import { AdminContentPage } from './pages/admin/AdminContentPage';
-import { AdminLogsPage } from './pages/admin/AdminLogsPage';
+import { AdminUnifiedPage } from './pages/admin/AdminUnifiedPage';
 
 // Types & API
 import { Service, PortfolioProject, TeamMember, SiteSettings, AdminUser } from './types';
@@ -101,26 +89,11 @@ export const App: React.FC = () => {
     }
 
     return (
-      <AdminLayout
+      <AdminUnifiedPage
         user={adminUser}
-        currentSection={adminSection}
-        onNavigateSection={setAdminSection}
         onLogout={handleLogout}
         onBackToSite={() => handleNavigate('home')}
-      >
-        {adminSection === 'dashboard' && <AdminDashboardPage onNavigateSection={setAdminSection} />}
-        {adminSection === 'inquiries' && <AdminInquiriesPage />}
-        {adminSection === 'appointments' && <AdminAppointmentsPage />}
-        {adminSection === 'projects' && <AdminProjectsPage />}
-        {adminSection === 'clients' && <AdminClientsPage />}
-        {adminSection === 'freelancers' && <AdminFreelancersPage />}
-        {adminSection === 'portfolio' && <AdminPortfolioPage />}
-        {adminSection === 'services' && <AdminServicesPage />}
-        {adminSection === 'team' && <AdminTeamPage />}
-        {adminSection === 'messages' && <AdminMessagesPage />}
-        {adminSection === 'content' && <AdminContentPage onSettingsUpdated={reloadAllData} />}
-        {adminSection === 'logs' && <AdminLogsPage />}
-      </AdminLayout>
+      />
     );
   }
 

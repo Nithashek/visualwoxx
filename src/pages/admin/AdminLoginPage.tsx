@@ -117,63 +117,19 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onLoginSuccess, 
             </button>
           </form>
 
-          {/* Quick Role Switcher */}
+          {/* Admin Credentials Helper */}
           <div className="pt-4 border-t border-white/[0.08] space-y-2">
-            <span className="block text-[10px] font-mono uppercase tracking-wider text-zinc-400 text-center">
-              Testing Credentials
-            </span>
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <button
-                type="button"
-                onClick={() => quickSwitch('admin', 'admin123')}
-                className={`p-2 rounded-lg border text-left transition-colors ${
-                  username === 'admin'
-                    ? 'bg-zinc-800 border-white/20 text-white font-bold'
-                    : 'bg-zinc-950 border-white/10 text-zinc-400 hover:text-white'
-                }`}
-              >
-                <span className="font-semibold block text-white text-xs">Super Admin</span>
-                <span className="text-[10px] text-zinc-500 font-mono">admin / admin123</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => quickSwitch('operations', 'ops123')}
-                className={`p-2 rounded-lg border text-left transition-colors ${
-                  username === 'operations'
-                    ? 'bg-zinc-800 border-white/20 text-white font-bold'
-                    : 'bg-zinc-950 border-white/10 text-zinc-400 hover:text-white'
-                }`}
-              >
-                <span className="font-semibold block text-white text-xs">Operations</span>
-                <span className="text-[10px] text-zinc-500 font-mono">operations / ops123</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => quickSwitch('creative', 'creative123')}
-                className={`p-2 rounded-lg border text-left transition-colors ${
-                  username === 'creative'
-                    ? 'bg-zinc-800 border-white/20 text-white font-bold'
-                    : 'bg-zinc-950 border-white/10 text-zinc-400 hover:text-white'
-                }`}
-              >
-                <span className="font-semibold block text-white text-xs">Creative Lead</span>
-                <span className="text-[10px] text-zinc-500 font-mono">creative / creative123</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => quickSwitch('recruiter', 'recruiter123')}
-                className={`p-2 rounded-lg border text-left transition-colors ${
-                  username === 'recruiter'
-                    ? 'bg-zinc-800 border-white/20 text-white font-bold'
-                    : 'bg-zinc-950 border-white/10 text-zinc-400 hover:text-white'
-                }`}
-              >
-                <span className="font-semibold block text-white text-xs">Recruitment</span>
-                <span className="text-[10px] text-zinc-500 font-mono">recruiter / recruiter123</span>
-              </button>
+            <div
+              onClick={() => quickSwitch('admin', 'admin123')}
+              className="p-3 rounded-xl bg-zinc-950 border border-white/10 hover:border-violet-500/40 cursor-pointer transition-all flex items-center justify-between"
+            >
+              <div>
+                <span className="font-semibold block text-white text-xs">Admin Access</span>
+                <span className="text-[10px] text-zinc-400 font-mono">admin / admin123</span>
+              </div>
+              <span className="text-[10px] px-2 py-0.5 rounded bg-violet-900/40 text-violet-300 border border-violet-700/40 font-mono">
+                Click to Auto-fill
+              </span>
             </div>
           </div>
         </div>

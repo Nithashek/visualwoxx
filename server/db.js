@@ -305,7 +305,60 @@ function initializeDatabase() {
       entity_id TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
+
+    -- 20. client_reviews
+    CREATE TABLE IF NOT EXISTS client_reviews (
+      id TEXT PRIMARY KEY,
+      client_name TEXT NOT NULL,
+      designation TEXT NOT NULL,
+      company TEXT,
+      quote TEXT NOT NULL,
+      rating INTEGER DEFAULT 5,
+      avatar_url TEXT,
+      is_published INTEGER DEFAULT 1,
+      display_order INTEGER DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
   `);
+
+  // Ensure only the single admin account is retained
+  try {
+    db.prepare("DELETE FROM profiles WHERE username IN ('operations', 'creative', 'recruiter')").run();
+  } catch (e) {
+    console.error('Error pruning extraneous profiles:', e);
+  }
+
+  // Safe schema migrations for customized admin fields
+  const safeAddColumn = (table, colDef) => {
+    try {
+      db.prepare(`ALTER TABLE ${table} ADD COLUMN ${colDef}`).run();
+    } catch (e) {
+      // Column already exists
+    }
+  };
+  safeAddColumn('appointments', 'location TEXT');
+  safeAddColumn('appointments', 'purpose TEXT');
+  safeAddColumn('appointments', 'meeting_notes TEXT');
+  safeAddColumn('projects', 'project_type TEXT');
+  safeAddColumn('projects', 'total_cost REAL DEFAULT 0');
+  safeAddColumn('projects', 'progress_stage TEXT DEFAULT "planning"');
+  safeAddColumn('clients', 'active_project TEXT');
+
+  // Seed reviews if not present
+  try {
+    const revCount = db.prepare('SELECT COUNT(*) as count FROM client_reviews').get().count;
+    if (revCount === 0) {
+      const insertRev = db.prepare(`
+        INSERT INTO client_reviews (id, client_name, designation, company, quote, rating, avatar_url, is_published, display_order)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+      insertRev.run('rev_1', 'Maya Patel', 'Event Director', 'Odyssey Events', 'The team captured our event beautifully and delivered polished edits ahead of schedule.', 5, 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80', 1, 1);
+      insertRev.run('rev_2', 'Daniel Reyes', 'Brand Manager', 'Aura Labs', 'They brought our visual identity to life with thoughtful, consistent design across every touchpoint.', 5, 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80', 1, 2);
+      insertRev.run('rev_3', 'Sofia Chen', 'Marketing Lead', 'Apex Automotive', 'Professional from the first brief to final delivery. The campaign visuals felt cohesive and memorable.', 5, 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=200&q=80', 1, 3);
+    }
+  } catch (e) {
+    console.error('Error seeding client reviews:', e);
+  }
 
   seedInitialData();
 }
@@ -316,16 +369,13 @@ function seedInitialData() {
 
   console.log('Seeding initial production-grade data for Visual Woxx...');
 
-  // 1. Seed Profiles (Admin Accounts)
+  // 1. Seed Single Admin Profile
   const insertProfile = db.prepare(`
     INSERT INTO profiles (id, username, email, password_hash, full_name, role, avatar_url)
     VALUES (?, ?, ?, ?, ?, ?, ?)
   `);
 
   insertProfile.run('prof_1', 'admin', 'admin@visualwoxx.com', 'admin123', 'Aravind Menon', 'super_admin', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80');
-  insertProfile.run('prof_2', 'operations', 'ops@visualwoxx.com', 'ops123', 'Meera Nair', 'operations_admin', 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=400&q=80');
-  insertProfile.run('prof_3', 'creative', 'creative@visualwoxx.com', 'creative123', 'Devanand K', 'creative_admin', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80');
-  insertProfile.run('prof_4', 'recruiter', 'hr@visualwoxx.com', 'recruiter123', 'Ananya Varma', 'recruitment_admin', 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80');
 
   // 2. Seed Site Settings
   const insertSetting = db.prepare('INSERT OR REPLACE INTO site_settings (key, value) VALUES (?, ?)');

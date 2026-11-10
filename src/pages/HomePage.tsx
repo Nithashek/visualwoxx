@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ArrowUpRight, ChevronRight, Star
 } from 'lucide-react';
-import { SiteSettings } from '../types';
+import { SiteSettings, ClientReview } from '../types';
+import { fetchReviews } from '../services/api';
 
 interface HomePageProps {
   settings: SiteSettings | null;
@@ -15,6 +16,39 @@ export const HomePage: React.FC<HomePageProps> = ({
   onNavigate,
   onOpenBooking,
 }) => {
+  const [reviews, setReviews] = useState<ClientReview[]>([]);
+
+  useEffect(() => {
+    fetchReviews()
+      .then(setReviews)
+      .catch(console.error);
+  }, []);
+
+  const defaultReviews = [
+    {
+      id: 'rev_1',
+      clientName: 'Maya Patel',
+      designation: 'Event Director',
+      quote: 'The team captured our event beautifully and delivered polished edits ahead of schedule.',
+      rating: 5
+    },
+    {
+      id: 'rev_2',
+      clientName: 'Daniel Reyes',
+      designation: 'Brand Manager',
+      quote: 'They brought our visual identity to life with thoughtful, consistent design across every touchpoint.',
+      rating: 5
+    },
+    {
+      id: 'rev_3',
+      clientName: 'Sofia Chen',
+      designation: 'Marketing Lead',
+      quote: 'Professional from the first brief to final delivery. The campaign visuals felt cohesive and memorable.',
+      rating: 5
+    }
+  ];
+
+  const displayReviews = reviews.length > 0 ? reviews : defaultReviews;
 
   return (
     <div className="relative pt-24 pb-16">
@@ -69,42 +103,29 @@ export const HomePage: React.FC<HomePageProps> = ({
             </div>
           </div>
 
-          {/* Sample Client Reviews */}
+          {/* Client Reviews */}
           <div className="pt-6 max-w-6xl mx-auto space-y-5">
             <div className="text-center space-y-2">
               <h2 className="text-2xl sm:text-3xl font-bold text-white font-display">What Clients Say</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
-              {[
-                {
-                  quote: 'The team captured our event beautifully and delivered polished edits ahead of schedule.',
-                  name: 'Maya Patel',
-                  designation: 'Event Director',
-                },
-                {
-                  quote: 'They brought our visual identity to life with thoughtful, consistent design across every touchpoint.',
-                  name: 'Daniel Reyes',
-                  designation: 'Brand Manager',
-                },
-                {
-                  quote: 'Professional from the first brief to final delivery. The campaign visuals felt cohesive and memorable.',
-                  name: 'Sofia Chen',
-                  designation: 'Marketing Lead',
-                },
-              ].map((review) => (
-                <article key={review.name} className="rounded-2xl p-5 bg-zinc-900/70 border border-white/10 space-y-4">
-                  <div className="flex items-center gap-1 text-[#ea00ff]" aria-label="5 out of 5 stars">
-                    {Array.from({ length: 5 }, (_, index) => (
-                      <Star key={index} className="w-4 h-4 fill-current" aria-hidden="true" />
-                    ))}
-                  </div>
-                  <p className="text-sm leading-relaxed text-zinc-300">“{review.quote}”</p>
-                  <div className="pt-3 border-t border-white/[0.08]">
-                    <p className="font-semibold text-white">{review.name}</p>
-                    <p className="text-xs text-zinc-400">{review.designation}</p>
-                  </div>
-                </article>
-              ))}
+              {displayReviews.map((review) => {
+                const starCount = review.rating || 5;
+                return (
+                  <article key={review.id} className="rounded-2xl p-5 bg-zinc-900/70 border border-white/10 space-y-4">
+                    <div className="flex items-center gap-1 text-[#ea00ff]" aria-label={`${starCount} out of 5 stars`}>
+                      {Array.from({ length: starCount }, (_, index) => (
+                        <Star key={index} className="w-4 h-4 fill-current" aria-hidden="true" />
+                      ))}
+                    </div>
+                    <p className="text-sm leading-relaxed text-zinc-300">“{review.quote}”</p>
+                    <div className="pt-3 border-t border-white/[0.08]">
+                      <p className="font-semibold text-white">{review.clientName}</p>
+                      <p className="text-xs text-zinc-400">{review.designation}</p>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           </div>
         </div>

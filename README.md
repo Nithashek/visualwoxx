@@ -69,20 +69,17 @@ Visual Woxx is a modern, premium, fully responsive web application and internal 
 
 Accessible via the lock icon in the navigation bar and footer.
 
-### Administrative Credentials & Roles for Testing:
-| Role | Username | Password | Permissions Scope |
+### Administrative Credentials:
+| Role | Username | Password | Scope |
 |---|---|---|---|
-| **Super Admin** | `admin` | `admin123` | Full system access across all 19 database tables |
-| **Operations Admin** | `operations` | `ops123` | Inquiries, appointments, client accounts, Kanban projects |
-| **Creative Admin** | `creative` | `creative123` | Portfolio case studies, services, and team profiles |
-| **Recruitment Admin** | `recruiter` | `recruiter123` | Freelancer application reviews and approved talent roster |
+| **Admin** | `admin` | `admin123` | Single unified admin dashboard: Freelance details, Portfolio handling, Review updation, and Inquiries |
 
-### Modules:
-* **Dashboard**: Real-time aggregate KPIs (*Total Clients, New Inquiries, Active Projects, Completed Projects, Pending Tasks, Upcoming Appointments, Total Freelancers, New Applications, Unread Messages*) and activity stream.
-* **Project Inquiries**: Filter by status (*New Inquiry, Under Review, Confirmed, Cancelled*), review scopes, add internal notes, and click **"Convert to Active Project & Client"** to auto-generate client and project records.
-* **Appointments**: Table and schedule views with Confirm, Reschedule, and Cancel workflows.
-* **Projects & Kanban**: 8-stage Kanban board (*Inquiry Received, Planning, In Progress, Client Review, Revisions, Completed, On Hold, Cancelled*) + Table view. Interactive subtasks checklist, progress sliders, deliverable links, and timelines.
-* **Clients**: Directory of client brands, contact details, requested services, and project histories.
+### Unified Admin Dashboard Capabilities:
+* **Functional Dashboard**: Real-time KPI counters (Freelancers, Pending Applications, Portfolio Works, Active Reviews, and Inquiries) with instant management shortcuts.
+* **Freelance Details Handling**: Review applicant pipeline with direct portfolio & resume links, status evaluator (`new_application`, `under_review`, `approved`, `rejected`), and active crew roster management with availability and star ratings.
+* **Portfolio Detail Handling**: Add, edit, preview, and delete case studies; update titles, categories, client details, cover imagery, 4K video preview links, deliverable tags, and gallery photos; toggle featured and published states.
+* **Review Updation & Feedback**: Create, edit, and update client testimonial quotes, ratings (1–5 stars), and designations with live sync to the public homepage's *"What Clients Say"* section.
+* **Inquiries & Discovery**: Review prospective client scopes, budgets, preferred contact methods, and update appointment and project consultation statuses.
 * **Freelancer Roster**: Two tabs: *Applications Pipeline* (review portfolios, resumes, and evaluate applicants) and *Approved Roster* (track skills, availability status, and ratings).
 * **Portfolio CMS**: Publish, edit, feature, and delete case studies and media gallery items.
 * **Services CMS**: Manage all 12 services, update deliverables, and change display ordering.

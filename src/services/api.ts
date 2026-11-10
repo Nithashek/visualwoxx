@@ -1,7 +1,7 @@
 import {
   Service, PortfolioProject, TeamMember, Inquiry, Appointment,
   Client, Project, FreelancerApplication, Freelancer,
-  ContactMessage, AppNotification, SiteSettings, AdminUser, DashboardStats
+  ContactMessage, AppNotification, SiteSettings, AdminUser, DashboardStats, ClientReview
 } from '../types';
 
 const API_BASE = '/api';
@@ -192,11 +192,28 @@ export async function fetchAppointments(status?: string): Promise<Appointment[]>
   return handleResponse<Appointment[]>(res);
 }
 
+export async function createAppointment(data: any): Promise<{ id: string; success: boolean }> {
+  const res = await fetch(`${API_BASE}/appointments`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+    body: JSON.stringify(data)
+  });
+  return handleResponse(res);
+}
+
 export async function updateAppointment(id: string, data: any): Promise<{ success: boolean }> {
   const res = await fetch(`${API_BASE}/appointments/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
     body: JSON.stringify(data)
+  });
+  return handleResponse(res);
+}
+
+export async function deleteAppointment(id: string): Promise<{ success: boolean }> {
+  const res = await fetch(`${API_BASE}/appointments/${id}`, {
+    method: 'DELETE',
+    headers: getAuthHeader()
   });
   return handleResponse(res);
 }
@@ -274,6 +291,14 @@ export async function updateClient(id: string, data: any): Promise<{ success: bo
   return handleResponse(res);
 }
 
+export async function deleteClient(id: string): Promise<{ success: boolean }> {
+  const res = await fetch(`${API_BASE}/clients/${id}`, {
+    method: 'DELETE',
+    headers: getAuthHeader()
+  });
+  return handleResponse(res);
+}
+
 // -------------------------------------------------------------
 // PROJECTS & TASKS
 // -------------------------------------------------------------
@@ -300,6 +325,14 @@ export async function updateProject(id: string, data: any): Promise<{ success: b
     method: 'PUT',
     headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
     body: JSON.stringify(data)
+  });
+  return handleResponse(res);
+}
+
+export async function deleteProject(id: string): Promise<{ success: boolean }> {
+  const res = await fetch(`${API_BASE}/projects/${id}`, {
+    method: 'DELETE',
+    headers: getAuthHeader()
   });
   return handleResponse(res);
 }
@@ -392,6 +425,40 @@ export async function markAllNotificationsRead(): Promise<{ success: boolean }> 
 export async function fetchActivityLogs(): Promise<any[]> {
   const res = await fetch(`${API_BASE}/activity-logs`, { headers: getAuthHeader() });
   return handleResponse<any[]>(res);
+}
+
+// -------------------------------------------------------------
+// REVIEWS (CLIENT REVIEWS & TESTIMONIALS)
+// -------------------------------------------------------------
+export async function fetchReviews(includeUnpublished = false): Promise<ClientReview[]> {
+  const res = await fetch(`${API_BASE}/reviews${includeUnpublished ? '?all=true' : ''}`);
+  return handleResponse<ClientReview[]>(res);
+}
+
+export async function createReview(reviewData: Partial<ClientReview>): Promise<{ id: string; success: boolean }> {
+  const res = await fetch(`${API_BASE}/reviews`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+    body: JSON.stringify(reviewData)
+  });
+  return handleResponse(res);
+}
+
+export async function updateReview(id: string, reviewData: Partial<ClientReview>): Promise<{ success: boolean }> {
+  const res = await fetch(`${API_BASE}/reviews/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+    body: JSON.stringify(reviewData)
+  });
+  return handleResponse(res);
+}
+
+export async function deleteReview(id: string): Promise<{ success: boolean }> {
+  const res = await fetch(`${API_BASE}/reviews/${id}`, {
+    method: 'DELETE',
+    headers: getAuthHeader()
+  });
+  return handleResponse(res);
 }
 
 // -------------------------------------------------------------

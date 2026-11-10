@@ -96,8 +96,11 @@ export interface Appointment {
   serviceName?: string;
   appointmentDate: string;
   appointmentTime: string;
-  status: 'new_inquiry' | 'confirmed' | 'rescheduled' | 'completed' | 'cancelled';
+  location?: string;
+  purpose?: string;
+  status: 'new_inquiry' | 'pending' | 'confirmed' | 'rescheduled' | 'completed' | 'cancelled' | string;
   notes?: string;
+  meetingNotes?: string;
   createdAt: string;
 }
 
@@ -107,6 +110,7 @@ export interface Client {
   email: string;
   phone?: string;
   organization?: string;
+  activeProject?: string;
   services_requested?: string;
   project_history?: string;
   notes?: string;
@@ -135,6 +139,8 @@ export interface ProjectUpdate {
 export interface Project {
   id: string;
   projectName: string;
+  projectType?: string;
+  totalCost?: number;
   clientId?: string;
   clientName: string;
   description?: string;
@@ -145,6 +151,7 @@ export interface Project {
   deadline?: string;
   priority: 'low' | 'medium' | 'high' | 'urgent';
   status: 'inquiry_received' | 'planning' | 'in_progress' | 'client_review' | 'revisions' | 'completed' | 'on_hold' | 'cancelled';
+  progressStage?: 'meeting' | 'event_deadline_completed' | 'payment_pending' | 'completed' | string;
   progressPct: number;
   internalNotes?: string;
   deliverables: Array<{ title: string; url: string }>;
@@ -234,12 +241,25 @@ export interface SiteSettings {
   [key: string]: string;
 }
 
+export interface ClientReview {
+  id: string;
+  clientName: string;
+  designation: string;
+  company?: string;
+  quote: string;
+  rating: number;
+  avatarUrl?: string;
+  isPublished: boolean;
+  displayOrder: number;
+  createdAt: string;
+}
+
 export interface AdminUser {
   id: string;
   username: string;
   email: string;
   fullName: string;
-  role: 'super_admin' | 'operations_admin' | 'creative_admin' | 'recruitment_admin';
+  role: 'super_admin' | 'admin' | string;
   avatarUrl?: string;
 }
 
@@ -253,6 +273,8 @@ export interface DashboardStats {
   totalFreelancers: number;
   newApplications: number;
   unreadMessages: number;
+  totalPortfolio?: number;
+  totalReviews?: number;
   recentActivity: Array<{
     id: string;
     action_type: string;

@@ -543,24 +543,79 @@ app.get('/api/appointments', (req, res) => {
     serviceName: r.service_name,
     appointmentDate: r.appointment_date,
     appointmentTime: r.appointment_time,
+    location: r.location || '',
+    purpose: r.purpose || r.service_name || '',
     status: r.status,
-    notes: r.notes,
+    notes: r.notes || '',
+    meetingNotes: r.meeting_notes || '',
     createdAt: r.created_at
   }));
   res.json(rows);
 });
 
+app.post('/api/appointments', (req, res) => {
+  const {
+    clientName, clientEmail, clientPhone, appointmentDate,
+    appointmentTime, location, purpose, notes, status
+  } = req.body;
+
+  if (!clientName || !appointmentDate || !appointmentTime) {
+    return res.status(400).json({ error: 'Client name, appointment date, and time are required.' });
+  }
+
+  const id = 'apt_' + Date.now();
+  db.prepare(`
+    INSERT INTO appointments (
+      id, client_name, client_email, client_phone, service_name,
+      appointment_date, appointment_time, location, purpose, status, notes, meeting_notes
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    id, clientName, clientEmail || '', clientPhone || '', purpose || 'Discovery Consultation',
+    appointmentDate, appointmentTime, location || 'Studio / Online', purpose || 'Meeting',
+    status || 'pending', notes || '', ''
+  );
+
+  logActivity('CREATE', `Scheduled appointment with ${clientName} on ${appointmentDate}`, 'Admin', 'appointments', id);
+  res.status(201).json({ id, success: true });
+});
+
 app.put('/api/appointments/:id', (req, res) => {
   const { id } = req.params;
-  const { status, appointmentDate, appointmentTime, notes } = req.body;
+  const { status, appointmentDate, appointmentTime, location, purpose, notes, meetingNotes } = req.body;
+
+  const current = db.prepare('SELECT * FROM appointments WHERE id = ?').get(id);
+  if (!current) return res.status(404).json({ error: 'Appointment not found' });
 
   db.prepare(`
     UPDATE appointments
-    SET status = ?, appointment_date = ?, appointment_time = ?, notes = ?, updated_at = CURRENT_TIMESTAMP
+    SET status = COALESCE(?, status),
+        appointment_date = COALESCE(?, appointment_date),
+        appointment_time = COALESCE(?, appointment_time),
+        location = COALESCE(?, location),
+        purpose = COALESCE(?, purpose),
+        notes = COALESCE(?, notes),
+        meeting_notes = COALESCE(?, meeting_notes),
+        updated_at = CURRENT_TIMESTAMP
     WHERE id = ?
-  `).run(status, appointmentDate, appointmentTime, notes, id);
+  `).run(
+    status !== undefined ? status : null,
+    appointmentDate !== undefined ? appointmentDate : null,
+    appointmentTime !== undefined ? appointmentTime : null,
+    location !== undefined ? location : null,
+    purpose !== undefined ? purpose : null,
+    notes !== undefined ? notes : null,
+    meetingNotes !== undefined ? meetingNotes : null,
+    id
+  );
 
-  logActivity('UPDATE', `Updated appointment ${id} to ${status}`, 'Operations Admin', 'appointments', id);
+  logActivity('UPDATE', `Updated appointment ${id} for ${current.client_name}`, 'Admin', 'appointments', id);
+  res.json({ success: true });
+});
+
+app.delete('/api/appointments/:id', (req, res) => {
+  const { id } = req.params;
+  db.prepare('DELETE FROM appointments WHERE id = ?').run(id);
+  logActivity('DELETE', `Deleted appointment ${id}`, 'Admin', 'appointments', id);
   res.json({ success: true });
 });
 
@@ -719,35 +774,61 @@ app.put('/api/freelancers/:id', (req, res) => {
 // CLIENTS
 // -------------------------------------------------------------
 app.get('/api/clients', (req, res) => {
-  const clients = db.prepare('SELECT * FROM clients ORDER BY created_at DESC').all();
+  const clients = db.prepare('SELECT * FROM clients ORDER BY created_at DESC').all().map(c => ({
+    id: c.id,
+    name: c.name,
+    email: c.email,
+    phone: c.phone || '',
+    organization: c.organization || '',
+    activeProject: c.active_project || c.services_requested || '',
+    servicesRequested: c.services_requested || '',
+    notes: c.notes || '',
+    status: c.status || 'active',
+    createdAt: c.created_at
+  }));
   res.json(clients);
 });
 
 app.post('/api/clients', (req, res) => {
-  const { name, email, phone, organization, servicesRequested, notes, status } = req.body;
+  const { name, email, phone, organization, activeProject, servicesRequested, notes, status } = req.body;
   if (!name || !email) {
     return res.status(400).json({ error: 'Name and email are required' });
   }
   const id = 'cl_' + Date.now();
   db.prepare(`
-    INSERT INTO clients (id, name, email, phone, organization, services_requested, notes, status)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(id, name, email, phone || '', organization || '', servicesRequested || '', notes || '', status || 'active');
+    INSERT INTO clients (id, name, email, phone, organization, active_project, services_requested, notes, status)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(id, name, email, phone || '', organization || '', activeProject || '', servicesRequested || '', notes || '', status || 'active');
 
-  logActivity('CREATE', `Added client: ${name}`, 'Operations Admin', 'clients', id);
+  logActivity('CREATE', `Added client: ${name}`, 'Admin', 'clients', id);
   res.status(201).json({ id, success: true });
 });
 
 app.put('/api/clients/:id', (req, res) => {
   const { id } = req.params;
-  const { name, email, phone, organization, servicesRequested, notes, status } = req.body;
+  const { name, email, phone, organization, activeProject, servicesRequested, notes, status } = req.body;
   db.prepare(`
     UPDATE clients
-    SET name = ?, email = ?, phone = ?, organization = ?, services_requested = ?, notes = ?, status = ?, updated_at = CURRENT_TIMESTAMP
+    SET name = COALESCE(?, name),
+        email = COALESCE(?, email),
+        phone = COALESCE(?, phone),
+        organization = COALESCE(?, organization),
+        active_project = COALESCE(?, active_project),
+        services_requested = COALESCE(?, services_requested),
+        notes = COALESCE(?, notes),
+        status = COALESCE(?, status),
+        updated_at = CURRENT_TIMESTAMP
     WHERE id = ?
-  `).run(name, email, phone, organization, servicesRequested, notes, status, id);
+  `).run(name, email, phone, organization, activeProject, servicesRequested, notes, status, id);
 
-  logActivity('UPDATE', `Updated client: ${name}`, 'Operations Admin', 'clients', id);
+  logActivity('UPDATE', `Updated client: ${name}`, 'Admin', 'clients', id);
+  res.json({ success: true });
+});
+
+app.delete('/api/clients/:id', (req, res) => {
+  const { id } = req.params;
+  db.prepare('DELETE FROM clients WHERE id = ?').run(id);
+  logActivity('DELETE', `Deleted client ${id}`, 'Admin', 'clients', id);
   res.json({ success: true });
 });
 
@@ -775,6 +856,9 @@ app.get('/api/projects', (req, res) => {
   const result = projects.map(p => ({
     id: p.id,
     projectName: p.project_name,
+    projectType: p.project_type || 'Event',
+    totalCost: p.total_cost || 0,
+    progressStage: p.progress_stage || p.status,
     clientId: p.client_id,
     clientName: p.client_name,
     description: p.description,
@@ -811,9 +895,10 @@ app.get('/api/projects', (req, res) => {
 
 app.post('/api/projects', (req, res) => {
   const {
-    projectName, clientId, clientName, description, services,
-    assignedTeam, assignedFreelancers, startDate, deadline,
-    priority, status, progressPct, internalNotes, deliverables
+    projectName, projectType, clientName, totalCost, clientId,
+    description, services, assignedTeam, assignedFreelancers,
+    startDate, deadline, priority, status, progressStage, progressPct,
+    internalNotes, deliverables
   } = req.body;
 
   if (!projectName || !clientName) {
@@ -823,66 +908,101 @@ app.post('/api/projects', (req, res) => {
   const id = 'prj_' + Date.now();
   db.prepare(`
     INSERT INTO projects (
-      id, project_name, client_id, client_name, description,
+      id, project_name, project_type, total_cost, client_id, client_name, description,
       services_json, assigned_team_json, assigned_freelancers_json,
-      start_date, deadline, priority, status, progress_pct,
+      start_date, deadline, priority, status, progress_stage, progress_pct,
       internal_notes, deliverable_links_json
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
-    id, projectName, clientId || null, clientName, description || '',
+    id, projectName, projectType || 'Event', totalCost || 0, clientId || null, clientName, description || '',
     JSON.stringify(services || []), JSON.stringify(assignedTeam || []),
     JSON.stringify(assignedFreelancers || []), startDate || null,
     deadline || null, priority || 'medium', status || 'planning',
-    progressPct || 0, internalNotes || '', JSON.stringify(deliverables || [])
+    progressStage || status || 'planning', progressPct || 0,
+    internalNotes || '', JSON.stringify(deliverables || [])
   );
 
   // Add initial timeline update
   db.prepare(`
     INSERT INTO project_updates (id, project_id, update_type, title, description, author_name)
-    VALUES (?, ?, 'status_change', 'Project Created', 'Project initialized in status: ' || ?, 'Operations Admin')
+    VALUES (?, ?, 'status_change', 'Project Created', 'Project initialized in status: ' || ?, 'Admin')
   `).run('upd_' + Date.now(), id, status || 'planning');
 
-  logActivity('CREATE', `Created project: ${projectName}`, 'Operations Admin', 'projects', id);
+  logActivity('CREATE', `Created project: ${projectName}`, 'Admin', 'projects', id);
   res.status(201).json({ id, success: true });
 });
 
 app.put('/api/projects/:id', (req, res) => {
   const { id } = req.params;
   const {
-    projectName, clientName, description, services, assignedTeam,
-    assignedFreelancers, startDate, deadline, priority, status,
-    progressPct, internalNotes, deliverables, updateNote
+    projectName, projectType, clientName, totalCost, description, services,
+    assignedTeam, assignedFreelancers, startDate, deadline, priority,
+    status, progressStage, progressPct, internalNotes, deliverables, updateNote
   } = req.body;
 
-  const current = db.prepare('SELECT status FROM projects WHERE id = ?').get(id);
+  const current = db.prepare('SELECT status, project_name FROM projects WHERE id = ?').get(id);
+  if (!current) return res.status(404).json({ error: 'Project not found' });
 
   db.prepare(`
     UPDATE projects
-    SET project_name = ?, client_name = ?, description = ?, services_json = ?,
-        assigned_team_json = ?, assigned_freelancers_json = ?, start_date = ?,
-        deadline = ?, priority = ?, status = ?, progress_pct = ?,
-        internal_notes = ?, deliverable_links_json = ?, updated_at = CURRENT_TIMESTAMP
+    SET project_name = COALESCE(?, project_name),
+        project_type = COALESCE(?, project_type),
+        total_cost = COALESCE(?, total_cost),
+        client_name = COALESCE(?, client_name),
+        description = COALESCE(?, description),
+        services_json = COALESCE(?, services_json),
+        assigned_team_json = COALESCE(?, assigned_team_json),
+        assigned_freelancers_json = COALESCE(?, assigned_freelancers_json),
+        start_date = COALESCE(?, start_date),
+        deadline = COALESCE(?, deadline),
+        priority = COALESCE(?, priority),
+        status = COALESCE(?, status),
+        progress_stage = COALESCE(?, progress_stage),
+        progress_pct = COALESCE(?, progress_pct),
+        internal_notes = COALESCE(?, internal_notes),
+        deliverable_links_json = COALESCE(?, deliverable_links_json),
+        updated_at = CURRENT_TIMESTAMP
     WHERE id = ?
   `).run(
-    projectName, clientName, description, JSON.stringify(services || []),
-    JSON.stringify(assignedTeam || []), JSON.stringify(assignedFreelancers || []),
-    startDate, deadline, priority, status, progressPct, internalNotes,
-    JSON.stringify(deliverables || []), id
+    projectName !== undefined ? projectName : null,
+    projectType !== undefined ? projectType : null,
+    totalCost !== undefined ? totalCost : null,
+    clientName !== undefined ? clientName : null,
+    description !== undefined ? description : null,
+    services !== undefined ? JSON.stringify(services) : null,
+    assignedTeam !== undefined ? JSON.stringify(assignedTeam) : null,
+    assignedFreelancers !== undefined ? JSON.stringify(assignedFreelancers) : null,
+    startDate !== undefined ? startDate : null,
+    deadline !== undefined ? deadline : null,
+    priority !== undefined ? priority : null,
+    status !== undefined ? status : null,
+    progressStage !== undefined ? progressStage : null,
+    progressPct !== undefined ? progressPct : null,
+    internalNotes !== undefined ? internalNotes : null,
+    deliverables !== undefined ? JSON.stringify(deliverables) : null,
+    id
   );
 
-  // If status changed or note provided, log update
-  if ((current && current.status !== status) || updateNote) {
+  // If status/stage changed or note provided, log update
+  if ((status && current.status !== status) || updateNote) {
     db.prepare(`
       INSERT INTO project_updates (id, project_id, update_type, title, description, author_name)
-      VALUES (?, ?, 'status_change', ?, ?, 'Operations Admin')
+      VALUES (?, ?, 'status_change', ?, ?, 'Admin')
     `).run(
       'upd_' + Date.now(), id,
-      current && current.status !== status ? `Status updated to ${status.replace('_', ' ').toUpperCase()}` : 'Progress Update',
-      updateNote || `Project status moved to ${status}`
+      status && current.status !== status ? `Status updated to ${status.replace('_', ' ').toUpperCase()}` : 'Progress Update',
+      updateNote || `Progress updated: ${progressStage || status}`
     );
   }
 
-  logActivity('UPDATE', `Updated project ${projectName} (${status})`, 'Operations Admin', 'projects', id);
+  logActivity('UPDATE', `Updated project ${projectName || current.project_name} (${status || 'updated'})`, 'Admin', 'projects', id);
+  res.json({ success: true });
+});
+
+app.delete('/api/projects/:id', (req, res) => {
+  const { id } = req.params;
+  db.prepare('DELETE FROM projects WHERE id = ?').run(id);
+  logActivity('DELETE', `Deleted project ${id}`, 'Admin', 'projects', id);
   res.json({ success: true });
 });
 
@@ -1014,6 +1134,8 @@ app.get('/api/stats', (req, res) => {
   const totalFreelancers = db.prepare('SELECT COUNT(*) as count FROM freelancers').get().count;
   const newApplications = db.prepare("SELECT COUNT(*) as count FROM freelancer_applications WHERE status = 'new_application'").get().count;
   const unreadMessages = db.prepare('SELECT COUNT(*) as count FROM contact_messages WHERE is_read = 0').get().count;
+  const totalPortfolio = db.prepare('SELECT COUNT(*) as count FROM portfolio_projects').get().count;
+  const totalReviews = db.prepare('SELECT COUNT(*) as count FROM client_reviews').get().count;
 
   const recentActivity = db.prepare('SELECT * FROM activity_logs ORDER BY created_at DESC LIMIT 8').all();
   const recentInquiries = db.prepare('SELECT id, full_name, email, project_title, status, created_at FROM inquiries ORDER BY created_at DESC LIMIT 5').all();
@@ -1029,10 +1151,100 @@ app.get('/api/stats', (req, res) => {
     totalFreelancers,
     newApplications,
     unreadMessages,
+    totalPortfolio,
+    totalReviews,
     recentActivity,
     recentInquiries,
     upcomingAppointmentsList
   });
+});
+
+// -------------------------------------------------------------
+// CLIENT REVIEWS (TESTIMONIALS & PUBLIC REVIEWS)
+// -------------------------------------------------------------
+app.get('/api/reviews', (req, res) => {
+  const includeAll = req.query.all === 'true';
+  const query = includeAll
+    ? 'SELECT * FROM client_reviews ORDER BY display_order ASC, created_at DESC'
+    : 'SELECT * FROM client_reviews WHERE is_published = 1 ORDER BY display_order ASC, created_at DESC';
+  
+  const rows = db.prepare(query).all().map(r => ({
+    id: r.id,
+    clientName: r.client_name,
+    designation: r.designation,
+    company: r.company,
+    quote: r.quote,
+    rating: r.rating,
+    avatarUrl: r.avatar_url,
+    isPublished: Boolean(r.is_published),
+    displayOrder: r.display_order,
+    createdAt: r.created_at
+  }));
+  res.json(rows);
+});
+
+app.post('/api/reviews', (req, res) => {
+  const { clientName, designation, company, quote, rating = 5, avatarUrl = '', isPublished = true, displayOrder = 0 } = req.body;
+  if (!clientName || !quote) {
+    return res.status(400).json({ error: 'Client name and quote are required' });
+  }
+
+  const id = 'rev_' + Date.now();
+  db.prepare(`
+    INSERT INTO client_reviews (id, client_name, designation, company, quote, rating, avatar_url, is_published, display_order)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(id, clientName, designation || 'Client', company || '', quote, rating, avatarUrl, isPublished ? 1 : 0, displayOrder);
+
+  logActivity('CREATE_REVIEW', `Added review by ${clientName}`, 'Admin', 'client_reviews', id);
+  res.status(201).json({ id, success: true });
+});
+
+app.put('/api/reviews/:id', (req, res) => {
+  const { id } = req.params;
+  const { clientName, designation, company, quote, rating, avatarUrl, isPublished, displayOrder } = req.body;
+
+  const current = db.prepare('SELECT * FROM client_reviews WHERE id = ?').get(id);
+  if (!current) {
+    return res.status(404).json({ error: 'Review not found' });
+  }
+
+  db.prepare(`
+    UPDATE client_reviews
+    SET client_name = COALESCE(?, client_name),
+        designation = COALESCE(?, designation),
+        company = COALESCE(?, company),
+        quote = COALESCE(?, quote),
+        rating = COALESCE(?, rating),
+        avatar_url = COALESCE(?, avatar_url),
+        is_published = COALESCE(?, is_published),
+        display_order = COALESCE(?, display_order)
+    WHERE id = ?
+  `).run(
+    clientName !== undefined ? clientName : null,
+    designation !== undefined ? designation : null,
+    company !== undefined ? company : null,
+    quote !== undefined ? quote : null,
+    rating !== undefined ? rating : null,
+    avatarUrl !== undefined ? avatarUrl : null,
+    isPublished !== undefined ? (isPublished ? 1 : 0) : null,
+    displayOrder !== undefined ? displayOrder : null,
+    id
+  );
+
+  logActivity('UPDATE_REVIEW', `Updated review for ${current.client_name}`, 'Admin', 'client_reviews', id);
+  res.json({ success: true });
+});
+
+app.delete('/api/reviews/:id', (req, res) => {
+  const { id } = req.params;
+  const current = db.prepare('SELECT * FROM client_reviews WHERE id = ?').get(id);
+  if (!current) {
+    return res.status(404).json({ error: 'Review not found' });
+  }
+
+  db.prepare('DELETE FROM client_reviews WHERE id = ?').run(id);
+  logActivity('DELETE_REVIEW', `Deleted review by ${current.client_name}`, 'Admin', 'client_reviews', id);
+  res.json({ success: true });
 });
 
 // Notifications
