@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import {
   LayoutDashboard, Calendar, FolderKanban, Users, UserCheck,
-  UserPlus, Star, Image as ImageIcon, Plus, Edit, Trash2,
+  Star, Image as ImageIcon, Plus, Edit, Trash2,
   Search, Filter, CheckCircle2, XCircle, Clock, ExternalLink,
   LogOut, Sparkles, Eye, EyeOff, Save, Check, AlertCircle,
   ChevronRight, ChevronLeft, Phone, Mail, MapPin, Globe,
   Shield, Play, DollarSign, Briefcase, FileText, CheckSquare,
-  MessageSquare, Video, ArrowUpRight
+  MessageSquare, Video, ArrowUpRight, PanelLeftClose, PanelLeftOpen,
+  Menu, X
 } from 'lucide-react';
 import {
   AdminUser, DashboardStats, FreelancerApplication, Freelancer,
   PortfolioProject, ClientReview, Inquiry, Appointment, Project,
-  Client, TeamMember
+  Client
 } from '../../types';
 import {
   fetchDashboardStats, fetchAppointments, createAppointment,
@@ -19,7 +20,6 @@ import {
   updateProject, deleteProject, fetchClients, createClient,
   updateClient, deleteClient, fetchFreelancerApplications,
   updateFreelancerApplication, fetchFreelancers, updateFreelancer,
-  fetchTeam, createTeamMember, updateTeamMember, deleteTeamMember,
   fetchReviews, createReview, updateReview, deleteReview,
   fetchPortfolio, createPortfolioProject, updatePortfolioProject,
   deletePortfolioProject
@@ -31,7 +31,7 @@ interface AdminUnifiedPageProps {
   onBackToSite: () => void;
 }
 
-type TabType = 'dashboard' | 'appointments' | 'projects' | 'clients' | 'freelancers' | 'team' | 'reviews' | 'portfolio';
+type TabType = 'dashboard' | 'appointments' | 'projects' | 'clients' | 'freelancers' | 'reviews' | 'portfolio';
 
 export const AdminUnifiedPage: React.FC<AdminUnifiedPageProps> = ({
   user,
@@ -40,6 +40,28 @@ export const AdminUnifiedPage: React.FC<AdminUnifiedPageProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
 
+  // Sidebar minimize state with persistence
+  const [sidebarMinimized, setSidebarMinimized] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('vw_admin_sidebar_minimized') === 'true';
+    } catch {
+      return false;
+    }
+  });
+  const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
+
+  const toggleSidebar = () => {
+    setSidebarMinimized((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('vw_admin_sidebar_minimized', String(next));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  };
+
   // Shared Data States
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -47,7 +69,6 @@ export const AdminUnifiedPage: React.FC<AdminUnifiedPageProps> = ({
   const [clients, setClients] = useState<Client[]>([]);
   const [applications, setApplications] = useState<FreelancerApplication[]>([]);
   const [freelancers, setFreelancers] = useState<Freelancer[]>([]);
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [reviews, setReviews] = useState<ClientReview[]>([]);
   const [portfolioProjects, setPortfolioProjects] = useState<PortfolioProject[]>([]);
 
@@ -71,17 +92,15 @@ export const AdminUnifiedPage: React.FC<AdminUnifiedPageProps> = ({
       fetchClients().catch(() => []),
       fetchFreelancerApplications().catch(() => []),
       fetchFreelancers().catch(() => []),
-      fetchTeam(true).catch(() => []),
       fetchReviews(true).catch(() => []),
       fetchPortfolio(true).catch(() => [])
-    ]).then(([s, apts, prjs, cls, fApps, fls, tm, revs, port]) => {
+    ]).then(([s, apts, prjs, cls, fApps, fls, revs, port]) => {
       if (s) setStats(s);
       setAppointments(apts);
       setProjects(prjs);
       setClients(cls);
       setApplications(fApps);
       setFreelancers(fls);
-      setTeamMembers(tm);
       setReviews(revs);
       setPortfolioProjects(port);
       setLoading(false);
@@ -150,17 +169,6 @@ export const AdminUnifiedPage: React.FC<AdminUnifiedPageProps> = ({
   const [selectedApp, setSelectedApp] = useState<FreelancerApplication | null>(null);
   const [flSubTab, setFlSubTab] = useState<'roster' | 'applications'>('roster');
 
-  // -------------------------------------------------------------
-  // 6. CORE TEAM MODAL & STATE
-  // -------------------------------------------------------------
-  const [teamModalOpen, setTeamModalOpen] = useState(false);
-  const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
-  const [tmName, setTmName] = useState('');
-  const [tmPosition, setTmPosition] = useState('');
-  const [tmDepartment, setTmDepartment] = useState('Production');
-  const [tmBio, setTmBio] = useState('');
-  const [tmPhoto, setTmPhoto] = useState('');
-  const [tmEmail, setTmEmail] = useState('');
 
   // -------------------------------------------------------------
   // 7. REVIEW MODAL & STATE
@@ -415,74 +423,6 @@ export const AdminUnifiedPage: React.FC<AdminUnifiedPageProps> = ({
     }
   };
 
-  // -------------------------------------------------------------
-  // HANDLERS: CORE TEAM
-  // -------------------------------------------------------------
-  const handleOpenAddTeam = () => {
-    setEditingMember(null);
-    setTmName('');
-    setTmPosition('');
-    setTmDepartment('Production');
-    setTmBio('');
-    setTmPhoto('');
-    setTmEmail('');
-    setTeamModalOpen(true);
-  };
-
-  const handleOpenEditTeam = (m: TeamMember) => {
-    setEditingMember(m);
-    setTmName(m.fullName);
-    setTmPosition(m.position);
-    setTmDepartment(m.department);
-    setTmBio(m.bio);
-    setTmPhoto(m.photoUrl);
-    setTmEmail(m.email || '');
-    setTeamModalOpen(true);
-  };
-
-  const handleSaveTeam = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!tmName || !tmPosition) return;
-
-    try {
-      if (editingMember) {
-        await updateTeamMember(editingMember.id, {
-          fullName: tmName,
-          position: tmPosition,
-          department: tmDepartment,
-          bio: tmBio,
-          photoUrl: tmPhoto || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
-          email: tmEmail
-        });
-        showNotification('Team member updated');
-      } else {
-        await createTeamMember({
-          fullName: tmName,
-          position: tmPosition,
-          department: tmDepartment,
-          bio: tmBio,
-          photoUrl: tmPhoto || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
-          email: tmEmail
-        });
-        showNotification('New core team member added');
-      }
-      setTeamModalOpen(false);
-      loadAllData();
-    } catch (err: any) {
-      showNotification(err.message || 'Failed to save team member', 'error');
-    }
-  };
-
-  const handleDeleteTeam = async (id: string, name: string) => {
-    if (!window.confirm(`Remove "${name}" from Core Team?`)) return;
-    try {
-      await deleteTeamMember(id);
-      showNotification('Team member removed');
-      loadAllData();
-    } catch (err: any) {
-      showNotification(err.message || 'Failed to delete team member', 'error');
-    }
-  };
 
   // -------------------------------------------------------------
   // HANDLERS: REVIEWS
@@ -702,8 +642,74 @@ export const AdminUnifiedPage: React.FC<AdminUnifiedPageProps> = ({
       }))
   ];
 
+  const navTabs: {
+    id: TabType;
+    number: number;
+    label: string;
+    icon: React.ComponentType<{ className?: string }>;
+    badge?: number;
+    badgeColor?: string;
+  }[] = [
+    {
+      id: 'dashboard',
+      number: 1,
+      label: 'Dashboard',
+      icon: LayoutDashboard,
+    },
+    {
+      id: 'appointments',
+      number: 2,
+      label: 'Appointment',
+      icon: Calendar,
+      badge: appointments.filter((a) => a.status === 'pending').length,
+      badgeColor: 'bg-cyan-400 text-dark-950 font-black',
+    },
+    {
+      id: 'projects',
+      number: 3,
+      label: 'Project',
+      icon: FolderKanban,
+      badge: activeProjectsList.length,
+      badgeColor: 'bg-purple-950 text-brand-neon border border-purple-800/50',
+    },
+    {
+      id: 'clients',
+      number: 4,
+      label: 'Client',
+      icon: Users,
+      badge: clients.length,
+      badgeColor: 'bg-dark-950 text-zinc-400',
+    },
+    {
+      id: 'freelancers',
+      number: 5,
+      label: 'Freelancers',
+      icon: UserCheck,
+      badge: freelancers.length,
+      badgeColor: 'bg-dark-950 text-zinc-400',
+    },
+    {
+      id: 'reviews',
+      number: 6,
+      label: 'Review',
+      icon: Star,
+      badge: reviews.length,
+      badgeColor: 'bg-dark-950 text-amber-300',
+    },
+    {
+      id: 'portfolio',
+      number: 7,
+      label: 'Portfolio',
+      icon: ImageIcon,
+      badge: portfolioProjects.length,
+      badgeColor: 'bg-dark-950 text-zinc-400',
+    },
+  ];
+
+  const currentTabInfo = navTabs.find((t) => t.id === activeTab) || navTabs[0];
+
   return (
-    <div className="min-h-screen bg-dark-950 text-slate-100 flex flex-col font-sans selection:bg-brand-purple/40 selection:text-white">
+    <div className="min-h-screen bg-dark-950 text-slate-100 flex flex-col md:flex-row font-sans selection:bg-brand-purple/40 selection:text-white relative">
       {/* Toast Alert */}
       {alertMsg && (
         <div
@@ -722,176 +728,226 @@ export const AdminUnifiedPage: React.FC<AdminUnifiedPageProps> = ({
         </div>
       )}
 
-      {/* Top Header */}
-      <header className="sticky top-0 z-40 bg-dark-900/90 border-b border-purple-900/30 backdrop-blur-xl px-4 sm:px-8 py-3.5 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-purple to-brand-electric p-0.5 shadow-glow-subtle flex items-center justify-center">
-            <div className="w-full h-full bg-dark-950 rounded-[10px] flex items-center justify-center">
-              <Shield className="w-5 h-5 text-brand-neon" />
-            </div>
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-display font-black text-base tracking-wider text-white">
-                VISUAL <span className="text-brand-neon">WOXX</span>
-              </span>
-              <span className="px-2 py-0.5 text-[9px] font-mono uppercase font-bold rounded bg-purple-950 text-brand-neon border border-purple-700/50">
-                Admin Center
-              </span>
-            </div>
-            <span className="text-[10px] text-zinc-400 font-mono hidden sm:block">
-              Integrated Operations, Production, Roster & Public CMS
+      {/* Mobile Top Header (Screens < md) */}
+      <div className="md:hidden sticky top-0 z-40 bg-dark-900/95 border-b border-purple-900/30 backdrop-blur-xl px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-2 rounded-xl bg-dark-950 border border-purple-900/40 text-zinc-300 hover:text-white"
+            aria-label="Toggle Navigation"
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5 text-brand-neon" /> : <Menu className="w-5 h-5" />}
+          </button>
+          <div className="flex items-center gap-2">
+            <span className="font-display font-black text-sm tracking-wider text-white">
+              VISUAL <span className="text-brand-neon">WOXX</span>
+            </span>
+            <span className="px-1.5 py-0.5 text-[8px] font-mono uppercase font-bold rounded bg-purple-950 text-brand-neon border border-purple-700/50">
+              Admin
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-dark-950 border border-purple-900/30 text-xs">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="font-semibold text-zinc-200">{user.fullName || 'Admin'}</span>
-          </div>
-
+        <div className="flex items-center gap-2">
           <button
             onClick={onBackToSite}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-dark-950 hover:bg-zinc-800 border border-purple-900/30 text-xs font-semibold text-zinc-300 hover:text-white transition-all"
+            className="p-2 rounded-xl bg-dark-950 border border-purple-900/30 text-xs font-semibold text-zinc-300 hover:text-white"
+            title="Public Website"
           >
-            <span>Public Website</span>
-            <ExternalLink className="w-3.5 h-3.5" />
+            <ExternalLink className="w-4 h-4" />
           </button>
-
           <button
             onClick={onLogout}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-950/40 hover:bg-red-900/60 border border-red-800/40 text-xs font-semibold text-red-300 hover:text-white transition-all"
+            className="p-2 rounded-xl bg-red-950/40 border border-red-800/40 text-xs font-semibold text-red-300 hover:text-white"
+            title="Sign Out"
           >
-            <LogOut className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Sign Out</span>
-          </button>
-        </div>
-      </header>
-
-      {/* 8-Tab Navigation Bar */}
-      <div className="bg-dark-900/60 border-b border-purple-900/20 px-4 sm:px-8 py-2 overflow-x-auto scrollbar-none">
-        <div className="flex items-center gap-2 min-w-max">
-          <button
-            onClick={() => setActiveTab('dashboard')}
-            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
-              activeTab === 'dashboard'
-                ? 'bg-brand-purple text-white shadow-glow-subtle'
-                : 'text-zinc-400 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            <LayoutDashboard className="w-4 h-4" />
-            <span>1. Dashboard</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('appointments')}
-            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
-              activeTab === 'appointments'
-                ? 'bg-brand-purple text-white shadow-glow-subtle'
-                : 'text-zinc-400 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            <Calendar className="w-4 h-4 text-cyan-400" />
-            <span>2. Appointment</span>
-            {appointments.filter((a) => a.status === 'pending').length > 0 && (
-              <span className="px-1.5 py-0.2 text-[10px] rounded-full bg-cyan-400 text-dark-950 font-black">
-                {appointments.filter((a) => a.status === 'pending').length}
-              </span>
-            )}
-          </button>
-
-          <button
-            onClick={() => setActiveTab('projects')}
-            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
-              activeTab === 'projects'
-                ? 'bg-brand-purple text-white shadow-glow-subtle'
-                : 'text-zinc-400 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            <FolderKanban className="w-4 h-4 text-brand-neon" />
-            <span>3. Project</span>
-            <span className="px-1.5 py-0.2 text-[10px] rounded-full bg-dark-950 text-zinc-400 font-mono">
-              {activeProjectsList.length}
-            </span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('clients')}
-            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
-              activeTab === 'clients'
-                ? 'bg-brand-purple text-white shadow-glow-subtle'
-                : 'text-zinc-400 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            <Users className="w-4 h-4 text-purple-400" />
-            <span>4. Client</span>
-            <span className="px-1.5 py-0.2 text-[10px] rounded-full bg-dark-950 text-zinc-400 font-mono">
-              {clients.length}
-            </span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('freelancers')}
-            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
-              activeTab === 'freelancers'
-                ? 'bg-brand-purple text-white shadow-glow-subtle'
-                : 'text-zinc-400 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            <UserCheck className="w-4 h-4 text-pink-400" />
-            <span>5. Freelancers</span>
-            <span className="px-1.5 py-0.2 text-[10px] rounded-full bg-dark-950 text-zinc-400 font-mono">
-              {freelancers.length}
-            </span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('team')}
-            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
-              activeTab === 'team'
-                ? 'bg-brand-purple text-white shadow-glow-subtle'
-                : 'text-zinc-400 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            <UserPlus className="w-4 h-4 text-emerald-400" />
-            <span>6. Core Team</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('reviews')}
-            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
-              activeTab === 'reviews'
-                ? 'bg-brand-purple text-white shadow-glow-subtle'
-                : 'text-zinc-400 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-            <span>7. Review</span>
-            <span className="px-1.5 py-0.2 text-[10px] rounded-full bg-dark-950 text-amber-300 font-mono">
-              {reviews.length}
-            </span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('portfolio')}
-            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
-              activeTab === 'portfolio'
-                ? 'bg-brand-purple text-white shadow-glow-subtle'
-                : 'text-zinc-400 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            <ImageIcon className="w-4 h-4 text-cyan-300" />
-            <span>8. Portfolio</span>
-            <span className="px-1.5 py-0.2 text-[10px] rounded-full bg-dark-950 text-zinc-400 font-mono">
-              {portfolioProjects.length}
-            </span>
+            <LogOut className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      {/* Main Tab View Container */}
-      <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto space-y-8">
+      {/* Mobile Drawer Backdrop */}
+      {mobileMenuOpen && (
+        <div
+          onClick={() => setMobileMenuOpen(false)}
+          className="md:hidden fixed inset-0 z-40 bg-black/70 backdrop-blur-sm"
+        />
+      )}
+
+      {/* Left Minimizable Sidebar */}
+      <aside
+        className={`fixed md:sticky top-0 left-0 z-50 h-screen transition-all duration-300 ease-in-out bg-dark-900 border-r border-purple-900/30 flex flex-col justify-between shrink-0 ${
+          mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+        } ${sidebarMinimized ? 'md:w-20' : 'md:w-64'} w-64`}
+      >
+        {/* Sidebar Header with Brand & Minimize Toggle */}
+        <div className={`p-4 border-b border-purple-900/20 flex items-center ${
+          sidebarMinimized ? 'justify-center' : 'justify-between'
+        }`}>
+          {!sidebarMinimized ? (
+            <div className="flex items-center gap-3 overflow-hidden">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-purple to-brand-electric p-0.5 shadow-glow-subtle shrink-0 flex items-center justify-center">
+                <div className="w-full h-full bg-dark-950 rounded-[10px] flex items-center justify-center">
+                  <Shield className="w-5 h-5 text-brand-neon" />
+                </div>
+              </div>
+              <div className="truncate">
+                <div className="flex items-center gap-1.5">
+                  <span className="font-display font-black text-sm tracking-wider text-white">
+                    VISUAL <span className="text-brand-neon">WOXX</span>
+                  </span>
+                </div>
+                <span className="px-1.5 py-0.5 text-[8px] font-mono uppercase font-bold rounded bg-purple-950 text-brand-neon border border-purple-700/50">
+                  Admin Center
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-purple to-brand-electric p-0.5 shadow-glow-subtle flex items-center justify-center">
+                <div className="w-full h-full bg-dark-950 rounded-[10px] flex items-center justify-center">
+                  <Shield className="w-5 h-5 text-brand-neon" />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Minimize / Expand Toggle Button (Desktop) */}
+          <button
+            onClick={toggleSidebar}
+            title={sidebarMinimized ? 'Expand sidebar' : 'Minimize sidebar'}
+            className="hidden md:flex p-1.5 rounded-lg bg-dark-950/80 hover:bg-zinc-800 border border-purple-900/30 text-zinc-400 hover:text-white transition-all items-center justify-center shrink-0"
+          >
+            {sidebarMinimized ? (
+              <PanelLeftOpen className="w-4 h-4 text-brand-neon" />
+            ) : (
+              <PanelLeftClose className="w-4 h-4" />
+            )}
+          </button>
+        </div>
+
+        {/* 7 Vertical Navigation Tabs */}
+        <div className="flex-1 py-4 px-2 space-y-1.5 overflow-y-auto scrollbar-none">
+          {navTabs.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeTab === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => {
+                  setActiveTab(item.id);
+                  setMobileMenuOpen(false);
+                }}
+                title={sidebarMinimized ? `${item.number}. ${item.label}` : undefined}
+                className={`w-full flex items-center rounded-xl transition-all group relative ${
+                  sidebarMinimized
+                    ? 'justify-center p-3'
+                    : 'justify-between px-3.5 py-2.5 text-xs'
+                } ${
+                  isActive
+                    ? 'bg-gradient-to-r from-brand-purple/50 to-brand-electric/30 text-white font-bold border border-purple-600/50 shadow-glow-subtle'
+                    : 'text-zinc-400 hover:text-white hover:bg-white/5 font-medium'
+                }`}
+              >
+                <div className={`flex items-center gap-3 ${sidebarMinimized ? 'justify-center' : ''}`}>
+                  <div className="relative">
+                    <Icon className={`w-5 h-5 transition-transform group-hover:scale-110 ${
+                      isActive ? 'text-brand-neon' : ''
+                    }`} />
+                    {sidebarMinimized && item.badge !== undefined && item.badge > 0 && (
+                      <span className="absolute -top-1 -right-1.5 w-2 h-2 rounded-full bg-brand-neon animate-pulse" />
+                    )}
+                  </div>
+                  {!sidebarMinimized && (
+                    <span className="truncate">
+                      {item.number}. {item.label}
+                    </span>
+                  )}
+                </div>
+
+                {!sidebarMinimized && item.badge !== undefined && item.badge > 0 && (
+                  <span className={`px-2 py-0.5 text-[10px] rounded-full font-mono font-bold ${
+                    item.badgeColor || 'bg-dark-950 text-zinc-400'
+                  }`}>
+                    {item.badge}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Sidebar Footer with Profile & Shortcuts */}
+        <div className="p-3 border-t border-purple-900/20 space-y-2">
+          {!sidebarMinimized && (
+            <div className="p-2.5 rounded-xl bg-dark-950 border border-purple-900/30 flex items-center justify-between">
+              <div className="flex items-center gap-2 truncate">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                <div className="truncate">
+                  <p className="text-xs font-semibold text-zinc-200 truncate">{user.fullName || 'Admin'}</p>
+                  <p className="text-[10px] text-zinc-500 font-mono">Operations Lead</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className={`flex ${sidebarMinimized ? 'flex-col' : 'flex-row'} gap-1.5`}>
+            <button
+              onClick={onBackToSite}
+              title="Public Website"
+              className={`flex items-center rounded-xl bg-dark-950 hover:bg-zinc-800 border border-purple-900/30 text-xs font-semibold text-zinc-300 hover:text-white transition-all ${
+                sidebarMinimized ? 'justify-center p-2.5' : 'flex-1 justify-center gap-1.5 py-2 px-2.5'
+              }`}
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              {!sidebarMinimized && <span>Site</span>}
+            </button>
+
+            <button
+              onClick={onLogout}
+              title="Sign Out"
+              className={`flex items-center rounded-xl bg-red-950/40 hover:bg-red-900/60 border border-red-800/40 text-xs font-semibold text-red-300 hover:text-white transition-all ${
+                sidebarMinimized ? 'justify-center p-2.5' : 'flex-1 justify-center gap-1.5 py-2 px-2.5'
+              }`}
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              {!sidebarMinimized && <span>Exit</span>}
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Desktop Top Header Bar */}
+        <header className="hidden md:flex sticky top-0 z-30 bg-dark-900/80 border-b border-purple-900/20 backdrop-blur-xl px-6 py-3.5 items-center justify-between">
+          <div className="flex items-center gap-2 text-xs">
+            <span className="text-zinc-500 font-mono">Admin</span>
+            <ChevronRight className="w-3.5 h-3.5 text-zinc-600" />
+            <span className="font-semibold text-white capitalize">
+              {currentTabInfo.number}. {currentTabInfo.label}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 px-3 py-1 rounded-xl bg-dark-950 border border-purple-900/30 text-xs text-zinc-300">
+              <span className="w-2 h-2 rounded-full bg-emerald-400" />
+              <span className="font-mono text-[11px]">System Live</span>
+            </div>
+            <button
+              onClick={loadAllData}
+              disabled={loading}
+              className="p-1.5 px-3 rounded-lg bg-dark-950 hover:bg-zinc-800 border border-purple-900/30 text-zinc-400 hover:text-white transition-all text-xs flex items-center gap-1.5"
+              title="Refresh Data"
+            >
+              <Sparkles className={`w-3.5 h-3.5 text-brand-neon ${loading ? 'animate-spin' : ''}`} />
+              <span className="text-[11px] font-medium hidden lg:inline">Sync</span>
+            </button>
+          </div>
+        </header>
+
+        {/* Main Tab View Container */}
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto space-y-8">
         {/* ===================================================================
             PAGE 1: DASHBOARD
             1. Count of Active project, Completed Project, No of clients, No of freelancers
@@ -1733,80 +1789,7 @@ export const AdminUnifiedPage: React.FC<AdminUnifiedPageProps> = ({
         )}
 
         {/* ===================================================================
-            PAGE 6: CORE TEAM
-            Manage team members displayed dynamically on public website
-           =================================================================== */}
-        {activeTab === 'team' && (
-          <div className="space-y-6 animate-fade-in">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-dark-900 border border-purple-900/30">
-              <div>
-                <h2 className="text-base font-bold text-white font-display flex items-center gap-2">
-                  <UserPlus className="w-5 h-5 text-emerald-400" />
-                  <span>Core Leadership & Creative Leads</span>
-                </h2>
-                <p className="text-xs text-zinc-400">
-                  Manage leadership and production committee members displayed in real time on the public About page
-                </p>
-              </div>
-
-              <button
-                onClick={handleOpenAddTeam}
-                className="btn-electric px-4 py-2 rounded-xl text-xs font-bold text-white flex items-center gap-2 shadow-glow-subtle self-start sm:self-auto"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Add Team Member</span>
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {teamMembers.map((m) => (
-                <div
-                  key={m.id}
-                  className="p-5 rounded-2xl bg-dark-900 border border-purple-900/30 space-y-4 hover:border-purple-600/40 transition-all flex flex-col justify-between"
-                >
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={m.photoUrl}
-                        alt={m.fullName}
-                        className="w-12 h-12 rounded-xl object-cover border border-purple-800/40"
-                      />
-                      <div>
-                        <h4 className="font-bold text-base text-white">{m.fullName}</h4>
-                        <p className="text-xs font-semibold text-brand-neon">{m.position}</p>
-                        <span className="text-[10px] text-zinc-500 font-mono">{m.department}</span>
-                      </div>
-                    </div>
-
-                    <p className="text-xs text-zinc-300 line-clamp-3 leading-relaxed">
-                      {m.bio}
-                    </p>
-                  </div>
-
-                  <div className="pt-3 border-t border-white/5 flex items-center justify-end gap-2">
-                    <button
-                      onClick={() => handleOpenEditTeam(m)}
-                      className="p-1.5 rounded-lg bg-dark-950 hover:bg-zinc-800 border border-purple-900/30 text-zinc-300 hover:text-white"
-                      title="Edit Member"
-                    >
-                      <Edit className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteTeam(m.id, m.fullName)}
-                      className="p-1.5 rounded-lg bg-red-950/40 hover:bg-red-900/60 border border-red-800/40 text-red-300 hover:text-white"
-                      title="Delete Member"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* ===================================================================
-            PAGE 7: REVIEW
+            PAGE 6: REVIEW
             Add/edit client reviews that take immediate effect on the main web page
            =================================================================== */}
         {activeTab === 'reviews' && (
@@ -1889,7 +1872,7 @@ export const AdminUnifiedPage: React.FC<AdminUnifiedPageProps> = ({
         )}
 
         {/* ===================================================================
-            PAGE 8: PORTFOLIO
+            PAGE 7: PORTFOLIO
             Option to add work into main page
            =================================================================== */}
         {activeTab === 'portfolio' && (
@@ -1971,6 +1954,7 @@ export const AdminUnifiedPage: React.FC<AdminUnifiedPageProps> = ({
           </div>
         )}
       </main>
+    </div>
 
       {/* ===================================================================
           MODAL: SCHEDULE APPOINTMENT MANUALLY
@@ -2348,98 +2332,6 @@ export const AdminUnifiedPage: React.FC<AdminUnifiedPageProps> = ({
         </div>
       )}
 
-      {/* ===================================================================
-          MODAL: ADD / EDIT CORE TEAM MEMBER
-         =================================================================== */}
-      {teamModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-dark-900 border border-purple-800/40 rounded-2xl w-full max-w-md p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-purple-900/30 pb-3">
-              <h3 className="text-base font-bold text-white font-display">
-                {editingMember ? 'Edit Team Member' : 'Add Team Member'}
-              </h3>
-              <button onClick={() => setTeamModalOpen(false)} className="text-zinc-400 hover:text-white">✕</button>
-            </div>
-
-            <form onSubmit={handleSaveTeam} className="space-y-4 text-xs">
-              <div>
-                <label className="block text-zinc-400 font-mono text-[10px] uppercase mb-1">Full Name *</label>
-                <input
-                  type="text"
-                  required
-                  value={tmName}
-                  onChange={(e) => setTmName(e.target.value)}
-                  placeholder="e.g. Aravind Menon"
-                  className="w-full bg-dark-950 border border-purple-900/30 rounded-xl px-3.5 py-2 text-white focus:outline-none focus:border-brand-neon"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-zinc-400 font-mono text-[10px] uppercase mb-1">Position / Role *</label>
-                  <input
-                    type="text"
-                    required
-                    value={tmPosition}
-                    onChange={(e) => setTmPosition(e.target.value)}
-                    placeholder="e.g. Founder & Creative Director"
-                    className="w-full bg-dark-950 border border-purple-900/30 rounded-xl px-3.5 py-2 text-white focus:outline-none focus:border-brand-neon"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-zinc-400 font-mono text-[10px] uppercase mb-1">Department</label>
-                  <input
-                    type="text"
-                    value={tmDepartment}
-                    onChange={(e) => setTmDepartment(e.target.value)}
-                    placeholder="Executive / Production / Creative"
-                    className="w-full bg-dark-950 border border-purple-900/30 rounded-xl px-3.5 py-2 text-white focus:outline-none focus:border-brand-neon"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-zinc-400 font-mono text-[10px] uppercase mb-1">Photo URL</label>
-                <input
-                  type="url"
-                  value={tmPhoto}
-                  onChange={(e) => setTmPhoto(e.target.value)}
-                  placeholder="https://images.unsplash.com/..."
-                  className="w-full bg-dark-950 border border-purple-900/30 rounded-xl px-3.5 py-2 text-white focus:outline-none focus:border-brand-neon"
-                />
-              </div>
-
-              <div>
-                <label className="block text-zinc-400 font-mono text-[10px] uppercase mb-1">Bio</label>
-                <textarea
-                  rows={3}
-                  value={tmBio}
-                  onChange={(e) => setTmBio(e.target.value)}
-                  placeholder="Bio summary for the public About page..."
-                  className="w-full bg-dark-950 border border-purple-900/30 rounded-xl px-3.5 py-2 text-white focus:outline-none focus:border-brand-neon"
-                />
-              </div>
-
-              <div className="pt-3 border-t border-purple-900/30 flex items-center justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setTeamModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-dark-950 hover:bg-zinc-800 text-zinc-400"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="btn-electric px-5 py-2 rounded-xl text-xs font-bold text-white shadow-glow-subtle"
-                >
-                  Save Team Member
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* ===================================================================
           MODAL: ADD / EDIT CLIENT REVIEW
