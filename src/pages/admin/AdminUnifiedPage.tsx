@@ -743,13 +743,12 @@ export const AdminUnifiedPage: React.FC<AdminUnifiedPageProps> = ({
               src="/logo.jpg"
               alt="Visual Woxx"
               className="w-8 h-8 rounded-lg object-cover"
-              style={{ filter: 'brightness(1.4) contrast(1.2) saturate(0)' }}
             />
-            <div>
-              <span className="font-display font-black text-sm tracking-wider text-white block leading-tight">
+            <div className="leading-none">
+              <span className="font-display font-black text-sm tracking-wider text-white block leading-none">
                 VISUAL WOXX
               </span>
-              <span className="text-[8px] font-mono uppercase tracking-widest text-zinc-400">CREATIVE STUDIO</span>
+              <span className="text-[8px] font-mono uppercase tracking-widest text-zinc-400 leading-none">CREATIVE STUDIO</span>
             </div>
             <span className="px-1.5 py-0.5 text-[8px] font-mono uppercase font-bold rounded bg-purple-950 text-brand-neon border border-purple-700/50">
               Admin
@@ -794,20 +793,17 @@ export const AdminUnifiedPage: React.FC<AdminUnifiedPageProps> = ({
           sidebarMinimized ? 'justify-center' : 'justify-between'
         }`}>
           {!sidebarMinimized ? (
-            <div className="flex items-center gap-3 overflow-hidden">
+            <div className="flex items-center gap-2.5 overflow-hidden">
               <img
                 src="/logo.jpg"
                 alt="Visual Woxx"
-                className="w-10 h-10 rounded-xl object-cover shrink-0 mix-blend-luminosity brightness-150 contrast-125"
-                style={{ filter: 'invert(0) brightness(1.4) contrast(1.2) saturate(0)' }}
+                className="w-10 h-10 rounded-xl object-cover shrink-0"
               />
-              <div className="truncate">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-display font-black text-sm tracking-wider text-white">
-                    VISUAL WOXX
-                  </span>
-                </div>
-                <span className="text-[9px] font-mono uppercase font-semibold tracking-widest text-zinc-400">
+              <div className="truncate leading-none">
+                <span className="font-display font-black text-sm tracking-wider text-white block leading-none">
+                  VISUAL WOXX
+                </span>
+                <span className="text-[8px] font-mono uppercase tracking-widest text-zinc-400 leading-none">
                   CREATIVE STUDIO
                 </span>
               </div>
@@ -818,7 +814,6 @@ export const AdminUnifiedPage: React.FC<AdminUnifiedPageProps> = ({
                 src="/logo.jpg"
                 alt="Visual Woxx"
                 className="w-10 h-10 rounded-xl object-cover"
-                style={{ filter: 'brightness(1.4) contrast(1.2) saturate(0)' }}
               />
             </div>
           )}
