@@ -28,7 +28,14 @@ export const App: React.FC = () => {
   const [pageParams, setPageParams] = useState<any>({});
 
   // Global Data
-  const [settings, setSettings] = useState<SiteSettings | null>(null);
+  const [settings, setSettings] = useState<SiteSettings | null>(() => {
+    try {
+      const cached = localStorage.getItem('vw_site_settings');
+      return cached ? JSON.parse(cached) : null;
+    } catch {
+      return null;
+    }
+  });
   const [services, setServices] = useState<Service[]>([]);
   const [portfolio, setPortfolio] = useState<PortfolioProject[]>([]);
   const [team, setTeam] = useState<TeamMember[]>([]);
@@ -43,10 +50,15 @@ export const App: React.FC = () => {
   const [adminSection, setAdminSection] = useState<string>('dashboard');
 
   const reloadAllData = () => {
-    fetchSiteSettings().then(setSettings).catch(console.error);
-    fetchServices().then(setServices).catch(console.error);
+    fetchSiteSettings().then((data) => {
+      setSettings(data);
+      if (data) {
+        try {
+          localStorage.setItem('vw_site_settings', JSON.stringify(data));
+        } catch {}
+      }
+    }).catch(console.error);
     fetchPortfolio().then(setPortfolio).catch(console.error);
-    fetchTeam().then(setTeam).catch(console.error);
   };
 
   useEffect(() => {

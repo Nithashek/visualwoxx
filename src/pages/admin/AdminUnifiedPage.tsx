@@ -114,6 +114,9 @@ export const AdminUnifiedPage: React.FC<AdminUnifiedPageProps> = ({
       setPortfolioProjects(port);
       if (sSettings) {
         setSiteSettings(sSettings);
+        try {
+          localStorage.setItem('vw_site_settings', JSON.stringify(sSettings));
+        } catch {}
         setStatCustomers(sSettings.happy_customers_count || '');
         setStatProjects(sSettings.completed_projects_count || '');
         setStatFreelancers(sSettings.freelancers_count || '');
@@ -526,12 +529,19 @@ export const AdminUnifiedPage: React.FC<AdminUnifiedPageProps> = ({
       const livePrj = `${completedProjectsList.length}+`;
       const liveFl = `${freelancers.length}+`;
 
-      await updateSiteSettings({
+      const updatedSettings = {
         stats_mode: statSyncMode,
         happy_customers_count: statSyncMode === 'custom' ? (statCustomers || liveCust) : liveCust,
         completed_projects_count: statSyncMode === 'custom' ? (statProjects || livePrj) : livePrj,
         freelancers_count: statSyncMode === 'custom' ? (statFreelancers || liveFl) : liveFl
-      });
+      };
+
+      await updateSiteSettings(updatedSettings);
+      try {
+        const cached = localStorage.getItem('vw_site_settings');
+        const prev = cached ? JSON.parse(cached) : {};
+        localStorage.setItem('vw_site_settings', JSON.stringify({ ...prev, ...updatedSettings }));
+      } catch {}
       showNotification('Homepage studio stats updated successfully!');
       setStatsModalOpen(false);
       loadAllData();

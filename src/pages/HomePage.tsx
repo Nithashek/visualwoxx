@@ -79,10 +79,13 @@ export const HomePage: React.FC<HomePageProps> = ({
     totalClients: number;
     completedProjects: number;
     totalFreelancers: number;
-  }>({
-    totalClients: 0,
-    completedProjects: 0,
-    totalFreelancers: 0
+  }>(() => {
+    try {
+      const cached = localStorage.getItem('vw_dashboard_stats');
+      return cached ? JSON.parse(cached) : { totalClients: 0, completedProjects: 0, totalFreelancers: 0 };
+    } catch {
+      return { totalClients: 0, completedProjects: 0, totalFreelancers: 0 };
+    }
   });
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
@@ -94,11 +97,15 @@ export const HomePage: React.FC<HomePageProps> = ({
     fetchDashboardStats()
       .then((data) => {
         if (data) {
-          setStats({
+          const parsed = {
             totalClients: Number(data.totalClients) || 0,
             completedProjects: Number(data.completedProjects) || 0,
             totalFreelancers: Number(data.totalFreelancers) || 0
-          });
+          };
+          setStats(parsed);
+          try {
+            localStorage.setItem('vw_dashboard_stats', JSON.stringify(parsed));
+          } catch {}
         }
       })
       .catch(() => {});
@@ -264,29 +271,47 @@ export const HomePage: React.FC<HomePageProps> = ({
           {(() => {
             const happyCustomersDisplay = settings?.stats_mode === 'custom' && settings?.happy_customers_count
               ? settings.happy_customers_count
-              : (settings?.happy_customers_count || (stats.totalClients > 0 ? `${stats.totalClients}+` : '5+'));
+              : (settings?.happy_customers_count || (stats.totalClients > 0 ? `${stats.totalClients}+` : ''));
 
             const completedProjectsDisplay = settings?.stats_mode === 'custom' && settings?.completed_projects_count
               ? settings.completed_projects_count
-              : (settings?.completed_projects_count || (stats.completedProjects > 0 ? `${stats.completedProjects}+` : '10+'));
+              : (settings?.completed_projects_count || (stats.completedProjects > 0 ? `${stats.completedProjects}+` : ''));
 
             const freelancersDisplay = settings?.stats_mode === 'custom' && settings?.freelancers_count
               ? settings.freelancers_count
-              : (settings?.freelancers_count || (stats.totalFreelancers > 0 ? `${stats.totalFreelancers}+` : '100+'));
+              : (settings?.freelancers_count || (stats.totalFreelancers > 0 ? `${stats.totalFreelancers}+` : ''));
 
             return (
               <div className="pt-10 max-w-5xl mx-auto text-center">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
                   <div className="space-y-1">
-                    <p className="text-3xl sm:text-4xl font-black text-[#ea00ff]">{happyCustomersDisplay}</p>
+                    <div className="min-h-[40px] flex items-center justify-center">
+                      {happyCustomersDisplay ? (
+                        <p className="text-3xl sm:text-4xl font-black text-[#ea00ff]">{happyCustomersDisplay}</p>
+                      ) : (
+                        <div className="h-8 w-16 bg-purple-900/30 rounded-lg animate-pulse" />
+                      )}
+                    </div>
                     <p className="text-sm text-zinc-300">Happy Customers</p>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-3xl sm:text-4xl font-black text-[#ea00ff]">{completedProjectsDisplay}</p>
+                    <div className="min-h-[40px] flex items-center justify-center">
+                      {completedProjectsDisplay ? (
+                        <p className="text-3xl sm:text-4xl font-black text-[#ea00ff]">{completedProjectsDisplay}</p>
+                      ) : (
+                        <div className="h-8 w-16 bg-purple-900/30 rounded-lg animate-pulse" />
+                      )}
+                    </div>
                     <p className="text-sm text-zinc-300">Completed Projects</p>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-3xl sm:text-4xl font-black text-[#ea00ff]">{freelancersDisplay}</p>
+                    <div className="min-h-[40px] flex items-center justify-center">
+                      {freelancersDisplay ? (
+                        <p className="text-3xl sm:text-4xl font-black text-[#ea00ff]">{freelancersDisplay}</p>
+                      ) : (
+                        <div className="h-8 w-16 bg-purple-900/30 rounded-lg animate-pulse" />
+                      )}
+                    </div>
                     <p className="text-sm text-zinc-300">Freelancers</p>
                   </div>
                 </div>

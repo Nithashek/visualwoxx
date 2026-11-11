@@ -395,7 +395,11 @@ function seedInitialData() {
     youtube_url: 'https://youtube.com/@visualwoxx',
     twitter_url: 'https://twitter.com/visualwoxx',
     behance_url: 'https://behance.net/visualwoxx',
-    footer_text: '© 2026 Visual Woxx Digital Solutions. All rights reserved. Crafting visual legacy with passion and precision.'
+    footer_text: '© 2026 Visual Woxx Digital Solutions. All rights reserved. Crafting visual legacy with passion and precision.',
+    stats_mode: 'live',
+    happy_customers_count: '4+',
+    completed_projects_count: '3+',
+    freelancers_count: '2+'
   };
 
   for (const [k, v] of Object.entries(defaultSettings)) {
