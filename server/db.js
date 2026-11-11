@@ -388,7 +388,7 @@ function seedInitialData() {
     mission: 'Our mission is to transform ideas into impactful visual experiences by delivering innovative, high-quality, and accessible creative digital solutions. We aim to simplify the creative process for our clients by bringing diverse creative services together under one roof.',
     vision: 'Our vision is to become a trusted creative digital solutions brand known for innovation, quality, and originality, empowering businesses, individuals, and organizations to communicate their stories and build stronger visual identities.',
     contact_email: 'contact@visualwoxx.in',
-    contact_phone: '+91 98470 12345',
+    contact_phone: '+91 949639827',
     contact_address: 'Kerala, India',
     instagram_url: 'https://instagram.com/visualwoxx',
     linkedin_url: 'https://linkedin.com/company/visualwoxx',

@@ -9,7 +9,7 @@ import { SiteSettings } from '../types';
 
 interface ContactPageProps {
   settings: SiteSettings | null;
-  onOpenBooking: () => void;
+  onOpenBooking?: () => void;
 }
 
 export const ContactPage: React.FC<ContactPageProps> = ({ settings, onOpenBooking }) => {
@@ -109,10 +109,10 @@ export const ContactPage: React.FC<ContactPageProps> = ({ settings, onOpenBookin
                 <div>
                   <span className="text-zinc-500 font-mono text-[10px] uppercase block">Phone / WhatsApp</span>
                   <a
-                    href={`tel:${settings?.contact_phone || '+919847012345'}`}
+                    href={`tel:${settings?.contact_phone || '+91949639827'}`}
                     className="text-sm font-semibold text-white hover:text-violet-300 transition-colors"
                   >
-                    {settings?.contact_phone || '+91 98470 12345'}
+                    {settings?.contact_phone || '+91 949639827'}
                   </a>
                 </div>
               </div>
@@ -181,20 +181,6 @@ export const ContactPage: React.FC<ContactPageProps> = ({ settings, onOpenBookin
                 </a>
               </div>
             </div>
-          </div>
-
-          {/* Consultation Box */}
-          <div className="rounded-2xl p-6 bg-zinc-900 border border-white/10 space-y-3">
-            <h4 className="text-sm font-bold text-white">Need an Appointment Consultation?</h4>
-            <p className="text-xs text-zinc-400 leading-relaxed">
-              If you have specific shoot dates and need a director consultation, use our dedicated booking system.
-            </p>
-            <button
-              onClick={onOpenBooking}
-              className="w-full btn-electric py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider text-white"
-            >
-              Open Booking System
-            </button>
           </div>
         </div>
 

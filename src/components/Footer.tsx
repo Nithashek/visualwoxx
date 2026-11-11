@@ -150,8 +150,8 @@ export const Footer: React.FC<FooterProps> = ({ settings, onNavigate, onOpenBook
                 <Phone className="w-3.5 h-3.5 text-violet-400 shrink-0 mt-0.5" />
                 <div>
                   <span className="block text-zinc-500 text-[10px] uppercase font-mono">Phone / WhatsApp</span>
-                  <a href={`tel:${settings?.contact_phone || '+919847012345'}`} className="hover:text-white font-medium">
-                    {settings?.contact_phone || '+91 98470 12345'}
+                  <a href={`tel:${settings?.contact_phone || '+91949639827'}`} className="hover:text-white font-medium">
+                    {settings?.contact_phone || '+91 949639827'}
                   </a>
                 </div>
               </div>
