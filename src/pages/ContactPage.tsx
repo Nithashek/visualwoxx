@@ -109,10 +109,10 @@ export const ContactPage: React.FC<ContactPageProps> = ({ settings, onOpenBookin
                 <div>
                   <span className="text-zinc-500 font-mono text-[10px] uppercase block">Phone / WhatsApp</span>
                   <a
-                    href={`tel:${settings?.contact_phone || '+91949639827'}`}
+                    href={`tel:${settings?.contact_phone || '+919496939827'}`}
                     className="text-sm font-semibold text-white hover:text-violet-300 transition-colors"
                   >
-                    {settings?.contact_phone || '+91 949639827'}
+                    {settings?.contact_phone || '+91 94969 39827'}
                   </a>
                 </div>
               </div>
