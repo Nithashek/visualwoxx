@@ -797,9 +797,9 @@ export const AdminUnifiedPage: React.FC<AdminUnifiedPageProps> = ({
           </button>
           <div className="flex items-center gap-2">
             <img
-              src="/logo.jpg"
+              src="/logo-mark.png"
               alt="Visual Woxx"
-              className="w-8 h-8 rounded-lg object-cover"
+              className="w-8 h-8 object-contain drop-shadow"
             />
             <div className="leading-none">
               <span className="font-display font-black text-sm tracking-wider text-white block leading-none">
@@ -852,9 +852,9 @@ export const AdminUnifiedPage: React.FC<AdminUnifiedPageProps> = ({
           {!sidebarMinimized ? (
             <div className="flex items-center gap-2.5 overflow-hidden">
               <img
-                src="/logo.jpg"
+                src="/logo-mark.png"
                 alt="Visual Woxx"
-                className="w-10 h-10 rounded-xl object-cover shrink-0"
+                className="w-10 h-10 object-contain drop-shadow shrink-0"
               />
               <div className="truncate leading-none">
                 <span className="font-display font-black text-sm tracking-wider text-white block leading-none">

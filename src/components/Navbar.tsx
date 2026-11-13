@@ -44,12 +44,11 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate, onOpenB
             onClick={() => onNavigate('home')}
             className="flex items-center gap-3 group text-left focus:outline-none"
           >
-            <div className="w-9 h-9 rounded-xl bg-violet-600 flex items-center justify-center p-2 text-white">
-              <svg viewBox="0 0 100 100" className="w-full h-full" fill="none">
-                <path d="M22 28L42 76L52 50L38 28H22Z" fill="#ffffff" />
-                <path d="M48 28L68 76L88 28H72L62 54L56 28H48Z" fill="#ffffff" />
-              </svg>
-            </div>
+            <img
+              src="/logo-mark.png"
+              alt="Visual Woxx"
+              className="w-10 h-10 object-contain drop-shadow"
+            />
             <div>
               <span className="text-lg font-black tracking-wider text-white font-display">
                 VISUAL WOXX

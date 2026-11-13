@@ -19,12 +19,11 @@ export const Footer: React.FC<FooterProps> = ({ settings, onNavigate, onOpenBook
           {/* Brand Info */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-violet-600 flex items-center justify-center p-1.5 text-white">
-                <svg viewBox="0 0 100 100" className="w-full h-full" fill="none">
-                  <path d="M22 28L42 76L52 50L38 28H22Z" fill="#ffffff" />
-                  <path d="M48 28L68 76L88 28H72L62 54L56 28H48Z" fill="#ffffff" />
-                </svg>
-              </div>
+              <img
+                src="/logo-mark.png"
+                alt="Visual Woxx"
+                className="w-9 h-9 object-contain drop-shadow"
+              />
               <div>
                 <span className="text-lg font-black tracking-wider text-white font-display">
                   VISUAL WOXX
