@@ -85,6 +85,15 @@
   }
 }
 
+/* Hide scrollbar utility for pocket slider */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* Glassmorphic Panels */
 .glass-panel {
   background: rgba(17, 17, 20, 0.8);

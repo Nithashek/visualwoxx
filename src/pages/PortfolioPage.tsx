@@ -44,6 +44,11 @@ export const PortfolioPage: React.FC<PortfolioPageProps> = ({
 
   // Per-card DOM refs for getBoundingClientRect
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const cardsContainerRef = useRef<HTMLDivElement>(null);
+  const isDraggingRef = useRef(false);
+  const startXRef = useRef(0);
+  const scrollLeftRef = useRef(0);
+  const hasMovedRef = useRef(false);
 
   // ─── Fallback project data ───────────────────────────────────────────────
   const displayProjects: PortfolioProject[] = portfolio.length > 0 ? portfolio : [
@@ -238,8 +243,59 @@ export const PortfolioPage: React.FC<PortfolioPageProps> = ({
     }
   }, []);
 
+  // Auto-scroll active card into position: centered in mobile view, or right after text pocket on desktop
+  useEffect(() => {
+    const cardEl = cardRefs.current[currentIndex];
+    const container = cardsContainerRef.current;
+    if (cardEl && container && !isDraggingRef.current) {
+      const isMobile = window.innerWidth < 640;
+      if (isMobile) {
+        // Center the active card in mobile view
+        const targetScroll = cardEl.offsetLeft - (container.clientWidth / 2) + (cardEl.clientWidth / 2);
+        container.scrollTo({ left: Math.max(0, targetScroll), behavior: 'smooth' });
+      } else {
+        // Desktop pocket positioning
+        const targetScroll = Math.max(0, cardEl.offsetLeft - 40);
+        container.scrollTo({ left: targetScroll, behavior: 'smooth' });
+      }
+    }
+  }, [currentIndex]);
+
+  // Mouse drag & wheel handlers for smooth horizontal card strip scrolling
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!cardsContainerRef.current) return;
+    isDraggingRef.current = true;
+    hasMovedRef.current = false;
+    startXRef.current = e.pageX - cardsContainerRef.current.offsetLeft;
+    scrollLeftRef.current = cardsContainerRef.current.scrollLeft;
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDraggingRef.current || !cardsContainerRef.current) return;
+    const x = e.pageX - cardsContainerRef.current.offsetLeft;
+    const walk = (x - startXRef.current) * 1.5;
+    if (Math.abs(walk) > 5) {
+      hasMovedRef.current = true;
+    }
+    cardsContainerRef.current.scrollLeft = scrollLeftRef.current - walk;
+  };
+
+  const handleMouseUp = () => {
+    isDraggingRef.current = false;
+  };
+
+  const handleWheel = (e: React.WheelEvent) => {
+    if (!cardsContainerRef.current) return;
+    if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+      cardsContainerRef.current.scrollLeft += e.deltaY;
+    } else {
+      cardsContainerRef.current.scrollLeft += e.deltaX;
+    }
+  };
+
   // ─── Card click ──────────────────────────────────────────────────────────
   const goToSlideFromCard = useCallback((nextIndex: number, cardEl: HTMLDivElement | null) => {
+    if (hasMovedRef.current) return; // Prevent card click if user was dragging
     const list = activeProjectsRef.current;
     if (list.length === 0) return;
     const normalizedIndex = ((nextIndex % list.length) + list.length) % list.length;
@@ -322,11 +378,13 @@ export const PortfolioPage: React.FC<PortfolioPageProps> = ({
         <div className="absolute inset-0 bg-gradient-to-t from-dark-950 via-dark-950/40 to-dark-950/80 pointer-events-none z-10" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(234,0,255,0.22)_0%,transparent_65%)] pointer-events-none z-10" />
 
-        {/* ── Main text block ── */}
+        {/* ── Main text block (Acts as the pocket cover: higher z-index & backdrop mask) ── */}
         <div
           ref={textContentRef}
-          className="relative z-20 max-w-2xl px-6 sm:px-16 pt-32 sm:pt-36 space-y-3.5"
+          className="relative z-30 max-w-2xl px-6 sm:px-16 pt-28 sm:pt-36 space-y-3 sm:space-y-3.5 pointer-events-auto"
         >
+          {/* Subtle gradient shadow behind text that creates the illusion of a pocket on desktop */}
+          <div className="hidden sm:block absolute -inset-x-12 -inset-y-10 bg-gradient-to-r from-dark-950 via-dark-950/90 to-transparent -z-10 pointer-events-none blur-xl" />
           <div className="flex items-center gap-3">
             <div className="w-8 h-[3px] rounded-full bg-brand-neon shadow-glow-purple shrink-0" />
             <span className="text-xs sm:text-sm font-mono uppercase tracking-[0.2em] text-brand-neon font-bold truncate">
@@ -335,24 +393,24 @@ export const PortfolioPage: React.FC<PortfolioPageProps> = ({
           </div>
 
           <div className="space-y-1">
-            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black font-display tracking-tight text-white leading-[1.08] drop-shadow-2xl">
+            <h1 className="text-3xl sm:text-6xl lg:text-7xl font-black font-display tracking-tight text-white leading-[1.08] drop-shadow-2xl">
               {splitTitle.line1}
             </h1>
             {splitTitle.line2 && (
-              <h2 className="text-2xl sm:text-4xl lg:text-5xl font-bold font-display tracking-tight text-white/85 leading-[1.12] drop-shadow-xl">
+              <h2 className="text-xl sm:text-4xl lg:text-5xl font-bold font-display tracking-tight text-white/85 leading-[1.12] drop-shadow-xl">
                 {splitTitle.line2}
               </h2>
             )}
           </div>
 
-          <p className="text-xs sm:text-sm text-zinc-300/90 leading-relaxed max-w-lg pt-1 line-clamp-3 sm:line-clamp-4 backdrop-blur-[1px]">
+          <p className="text-xs sm:text-sm text-zinc-300/90 leading-relaxed max-w-lg pt-1 line-clamp-2 sm:line-clamp-4 backdrop-blur-[1px]">
             {currentProject.description}
           </p>
 
-          <div className="flex items-center gap-3 pt-3">
+          <div className="flex items-center gap-3 pt-2 sm:pt-3">
             <button
               onClick={() => onSelectProject(currentProject)}
-              className="px-6 py-3 rounded-full text-xs font-bold uppercase tracking-wider bg-white/10 hover:bg-brand-neon hover:border-brand-neon text-white border border-white/20 backdrop-blur-xl transition-all shadow-lg hover:shadow-glow-purple flex items-center gap-2 group"
+              className="px-5 sm:px-6 py-2.5 sm:py-3 rounded-full text-xs font-bold uppercase tracking-wider bg-white/10 hover:bg-brand-neon hover:border-brand-neon text-white border border-white/20 backdrop-blur-xl transition-all shadow-lg hover:shadow-glow-purple flex items-center gap-2 group"
             >
               <span>View Case Study</span>
               <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
@@ -360,7 +418,7 @@ export const PortfolioPage: React.FC<PortfolioPageProps> = ({
             {currentProject.videoUrl && (
               <button
                 onClick={() => onSelectProject(currentProject)}
-                className="w-11 h-11 rounded-full bg-brand-neon/20 hover:bg-brand-neon border border-brand-neon/50 text-white flex items-center justify-center transition-all shadow-glow-purple"
+                className="w-10 sm:w-11 h-10 sm:h-11 rounded-full bg-brand-neon/20 hover:bg-brand-neon border border-brand-neon/50 text-white flex items-center justify-center transition-all shadow-glow-purple"
               >
                 <Play className="w-4 h-4 fill-white ml-0.5" />
               </button>
@@ -368,8 +426,21 @@ export const PortfolioPage: React.FC<PortfolioPageProps> = ({
           </div>
         </div>
 
-        {/* ── Preview Cards — right half, vertically centered ── */}
-        <div className="absolute left-1/2 right-0 top-1/2 -translate-y-1/2 z-20 flex items-center gap-3 pl-4 pr-6 sm:pr-10 overflow-hidden pointer-events-auto">
+        {/* ── Preview Cards Strip ──
+            On mobile: positioned down below the text with generous left/right padding so active card centers comfortably
+            On desktop: positioned right-aligned under text pocket with smooth left/right drag
+        ── */}
+        <div
+          ref={cardsContainerRef}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+          onWheel={handleWheel}
+          className="absolute left-0 right-0 z-20 flex items-center gap-3 overflow-x-auto no-scrollbar pointer-events-auto cursor-grab active:cursor-grabbing select-none scroll-smooth
+                     bottom-24 top-auto pb-4 pt-2 px-[calc(50vw-4.5rem)]
+                     sm:bottom-auto sm:top-1/2 sm:-translate-y-1/2 sm:pl-[42vw] lg:sm:pl-[46vw] sm:pr-14"
+        >
           {activeProjects.map((project, idx) => {
             const isActive   = idx === currentIndex;
             const splitPTitle = getSplitTitle(project.title);
