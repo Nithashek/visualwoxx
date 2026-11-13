@@ -12,18 +12,13 @@ interface BookingModalProps {
 
 export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, initialService }) => {
   const [servicesList, setServicesList] = useState<Service[]>([]);
-  const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [selectedService, setSelectedService] = useState('');
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [organization, setOrganization] = useState('');
-  const [projectTitle, setProjectTitle] = useState('');
-  const [projectDescription, setProjectDescription] = useState('');
   const [eventDate, setEventDate] = useState('');
-  const [preferredAppointmentDate, setPreferredAppointmentDate] = useState('');
-  const [preferredAppointmentTime, setPreferredAppointmentTime] = useState('14:00');
-  const [budgetRange, setBudgetRange] = useState('₹50,000 - ₹1,00,000');
-  const [preferredContactMethod, setPreferredContactMethod] = useState<'Email' | 'Phone' | 'WhatsApp'>('Email');
+  const [eventLocation, setEventLocation] = useState('');
+  const [additionalDetails, setAdditionalDetails] = useState('');
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,24 +32,18 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ini
 
   useEffect(() => {
     if (initialService) {
-      setSelectedServices((prev) => (prev.includes(initialService) ? prev : [...prev, initialService]));
+      setSelectedService(initialService);
     }
   }, [initialService]);
 
   if (!isOpen) return null;
 
-  const toggleService = (srvTitle: string) => {
-    setSelectedServices((prev) =>
-      prev.includes(srvTitle) ? prev.filter((s) => s !== srvTitle) : [...prev, srvTitle]
-    );
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    if (selectedServices.length === 0) {
-      setError('Please select at least one creative service required.');
+    if (!selectedService) {
+      setError('Please select a service.');
       return;
     }
 
@@ -64,15 +53,16 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ini
         fullName,
         email,
         phone,
-        organization,
-        services: selectedServices,
-        projectTitle,
-        projectDescription,
+        organization: '',
+        services: [selectedService],
+        projectTitle: selectedService,
+        projectDescription: additionalDetails || 'No additional details provided.',
         eventDate,
-        preferredAppointmentDate,
-        preferredAppointmentTime,
-        budgetRange,
-        preferredContactMethod
+        eventLocation,
+        preferredAppointmentDate: eventDate,
+        preferredAppointmentTime: '10:00',
+        budgetRange: 'Contact for Quote',
+        preferredContactMethod: 'Email'
       });
 
       setSuccessData(res);
@@ -91,15 +81,13 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ini
 
   const handleResetAndClose = () => {
     setSuccessData(null);
-    setSelectedServices([]);
+    setSelectedService('');
     setFullName('');
     setEmail('');
     setPhone('');
-    setOrganization('');
-    setProjectTitle('');
-    setProjectDescription('');
     setEventDate('');
-    setPreferredAppointmentDate('');
+    setEventLocation('');
+    setAdditionalDetails('');
     setError(null);
     onClose();
   };
@@ -123,7 +111,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ini
 
             <div className="space-y-2">
               <h3 className="text-2xl font-bold font-display text-white">
-                Inquiry & Appointment Request Logged
+                Appointment Request Submitted
               </h3>
               <p className="text-sm text-zinc-300 max-w-md mx-auto leading-relaxed">
                 {successData.message}
@@ -138,17 +126,13 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ini
               <div className="flex justify-between items-center">
                 <span className="text-zinc-500 font-mono">Current Status:</span>
                 <span className="px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-200 font-mono text-[10px]">
-                  Under Review
+                  Pending Approval
                 </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-zinc-500 font-mono">Contact Method:</span>
-                <span className="text-zinc-200 font-medium">{preferredContactMethod}</span>
               </div>
             </div>
 
             <p className="text-xs text-zinc-400">
-              Our studio operations team will confirm availability via {preferredContactMethod}.
+              Our team will review your request and confirm your appointment shortly.
             </p>
 
             <button
@@ -162,13 +146,13 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ini
           <div>
             <div className="mb-6 space-y-1">
               <span className="text-xs font-mono text-violet-400 uppercase tracking-widest block mb-1">
-                Project Discovery & Scheduling
+                Book an Appointment
               </span>
               <h2 className="text-2xl font-bold text-white font-display">
-                Start a Creative Project
+                Request a Service
               </h2>
               <p className="text-xs text-zinc-400">
-                Tell us about your brand, upcoming event, or production requirements.
+                Fill in your details and we'll get back to you to confirm your appointment.
               </p>
             </div>
 
@@ -180,204 +164,110 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ini
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4 text-xs">
-              {/* Service Multi-Select */}
+              {/* Full Name */}
               <div>
-                <label className="block text-zinc-300 font-medium mb-1.5 font-mono text-[11px] uppercase tracking-wider">
-                  Services Required <span className="text-violet-400">*</span>
+                <label className="block text-zinc-400 font-medium mb-1 font-mono text-[10px] uppercase">
+                  Full Name <span className="text-violet-400">*</span>
                 </label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {servicesList.map((srv) => {
-                    const isSelected = selectedServices.includes(srv.title);
-                    return (
-                      <button
-                        type="button"
-                        key={srv.id}
-                        onClick={() => toggleService(srv.title)}
-                        className={`p-2.5 rounded-xl text-left font-medium transition-all border ${
-                          isSelected
-                            ? 'bg-violet-600 border-violet-500 text-white'
-                            : 'bg-zinc-950 border-white/10 text-zinc-400 hover:border-white/20 hover:text-white'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs leading-tight">{srv.title}</span>
-                          {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
+                <input
+                  type="text"
+                  required
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="e.g. Alex Morgan"
+                  className="w-full bg-zinc-950 border border-white/10 rounded-lg px-3 py-2 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-violet-500"
+                />
               </div>
 
-              {/* Client Info Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                <div>
-                  <label className="block text-zinc-400 font-medium mb-1 font-mono text-[10px] uppercase">
-                    Full Name <span className="text-violet-400">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder="e.g. Alex Morgan"
-                    className="w-full bg-zinc-950 border border-white/10 rounded-lg px-3 py-2 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-violet-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-zinc-400 font-medium mb-1 font-mono text-[10px] uppercase">
-                    Email Address <span className="text-violet-400">*</span>
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="alex@example.com"
-                    className="w-full bg-zinc-950 border border-white/10 rounded-lg px-3 py-2 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-violet-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-zinc-400 font-medium mb-1 font-mono text-[10px] uppercase">
-                    Phone / WhatsApp <span className="text-violet-400">*</span>
-                  </label>
-                  <input
-                    type="tel"
-                    required
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+91 98765 43210"
-                    className="w-full bg-zinc-950 border border-white/10 rounded-lg px-3 py-2 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-violet-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-zinc-400 font-medium mb-1 font-mono text-[10px] uppercase">
-                    Brand or Organization
-                  </label>
-                  <input
-                    type="text"
-                    value={organization}
-                    onChange={(e) => setOrganization(e.target.value)}
-                    placeholder="Company or Event name"
-                    className="w-full bg-zinc-950 border border-white/10 rounded-lg px-3 py-2 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-violet-500"
-                  />
-                </div>
+              {/* Email */}
+              <div>
+                <label className="block text-zinc-400 font-medium mb-1 font-mono text-[10px] uppercase">
+                  Email Address <span className="text-violet-400">*</span>
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="alex@example.com"
+                  className="w-full bg-zinc-950 border border-white/10 rounded-lg px-3 py-2 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-violet-500"
+                />
               </div>
 
-              {/* Project Title & Description */}
-              <div className="space-y-3 pt-1">
-                <div>
-                  <label className="block text-zinc-400 font-medium mb-1 font-mono text-[10px] uppercase">
-                    Project or Event Title <span className="text-violet-400">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={projectTitle}
-                    onChange={(e) => setProjectTitle(e.target.value)}
-                    placeholder="e.g. Summer Music Fest Coverage / Brand Identity Redesign"
-                    className="w-full bg-zinc-950 border border-white/10 rounded-lg px-3 py-2 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-violet-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-zinc-400 font-medium mb-1 font-mono text-[10px] uppercase">
-                    Project Description & Creative Scope <span className="text-violet-400">*</span>
-                  </label>
-                  <textarea
-                    rows={3}
-                    required
-                    value={projectDescription}
-                    onChange={(e) => setProjectDescription(e.target.value)}
-                    placeholder="Describe your vision, deliverables needed, locations, references, or timeline..."
-                    className="w-full bg-zinc-950 border border-white/10 rounded-lg px-3 py-2 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-violet-500"
-                  />
-                </div>
+              {/* Contact Number */}
+              <div>
+                <label className="block text-zinc-400 font-medium mb-1 font-mono text-[10px] uppercase">
+                  Contact Number <span className="text-violet-400">*</span>
+                </label>
+                <input
+                  type="tel"
+                  required
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+91 98765 43210"
+                  className="w-full bg-zinc-950 border border-white/10 rounded-lg px-3 py-2 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-violet-500"
+                />
               </div>
 
-              {/* Scheduling Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-                <div>
-                  <label className="block text-zinc-400 font-medium mb-1 font-mono text-[10px] uppercase">
-                    Event / Shoot Date
-                  </label>
-                  <input
-                    type="date"
-                    value={eventDate}
-                    onChange={(e) => setEventDate(e.target.value)}
-                    className="w-full bg-zinc-950 border border-white/10 rounded-lg px-3 py-2 text-zinc-100 focus:outline-none focus:border-violet-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-zinc-400 font-medium mb-1 font-mono text-[10px] uppercase">
-                    Preferred Meeting Date <span className="text-violet-400">*</span>
-                  </label>
-                  <input
-                    type="date"
-                    required
-                    value={preferredAppointmentDate}
-                    onChange={(e) => setPreferredAppointmentDate(e.target.value)}
-                    className="w-full bg-zinc-950 border border-white/10 rounded-lg px-3 py-2 text-zinc-100 focus:outline-none focus:border-violet-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-zinc-400 font-medium mb-1 font-mono text-[10px] uppercase">
-                    Preferred Time Slot
-                  </label>
-                  <input
-                    type="time"
-                    value={preferredAppointmentTime}
-                    onChange={(e) => setPreferredAppointmentTime(e.target.value)}
-                    className="w-full bg-zinc-950 border border-white/10 rounded-lg px-3 py-2 text-zinc-100 focus:outline-none focus:border-violet-500"
-                  />
-                </div>
+              {/* Service Required - Dropdown */}
+              <div>
+                <label className="block text-zinc-400 font-medium mb-1 font-mono text-[10px] uppercase">
+                  Service Required <span className="text-violet-400">*</span>
+                </label>
+                <select
+                  required
+                  value={selectedService}
+                  onChange={(e) => setSelectedService(e.target.value)}
+                  className="w-full bg-zinc-950 border border-white/10 rounded-lg px-3 py-2 text-zinc-100 focus:outline-none focus:border-violet-500"
+                >
+                  <option value="" disabled>Select a service</option>
+                  {servicesList.map((srv) => (
+                    <option key={srv.id} value={srv.title}>
+                      {srv.title}
+                    </option>
+                  ))}
+                </select>
               </div>
 
-              {/* Budget & Contact Method */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                <div>
-                  <label className="block text-zinc-400 font-medium mb-1 font-mono text-[10px] uppercase">
-                    Estimated Budget Range
-                  </label>
-                  <select
-                    value={budgetRange}
-                    onChange={(e) => setBudgetRange(e.target.value)}
-                    className="w-full bg-zinc-950 border border-white/10 rounded-lg px-3 py-2 text-zinc-100 focus:outline-none focus:border-violet-500"
-                  >
-                    <option value="Under ₹50,000">Under ₹50,000</option>
-                    <option value="₹50,000 - ₹1,00,000">₹50,000 - ₹1,00,000</option>
-                    <option value="₹1,00,000 - ₹2,50,000">₹1,00,000 - ₹2,50,000</option>
-                    <option value="₹2,50,000 - ₹5,00,000+">₹2,50,000 - ₹5,00,000+</option>
-                    <option value="Custom Quote Required">Custom Quote Required</option>
-                  </select>
-                </div>
+              {/* Event Date */}
+              <div>
+                <label className="block text-zinc-400 font-medium mb-1 font-mono text-[10px] uppercase">
+                  Event Date
+                </label>
+                <input
+                  type="date"
+                  value={eventDate}
+                  onChange={(e) => setEventDate(e.target.value)}
+                  className="w-full bg-zinc-950 border border-white/10 rounded-lg px-3 py-2 text-zinc-100 focus:outline-none focus:border-violet-500"
+                />
+              </div>
 
-                <div>
-                  <label className="block text-zinc-400 font-medium mb-1 font-mono text-[10px] uppercase">
-                    Preferred Contact Method <span className="text-violet-400">*</span>
-                  </label>
-                  <div className="grid grid-cols-3 gap-1.5 pt-0.5">
-                    {(['Email', 'Phone', 'WhatsApp'] as const).map((method) => (
-                      <button
-                        type="button"
-                        key={method}
-                        onClick={() => setPreferredContactMethod(method)}
-                        className={`py-2 px-2 rounded-lg text-center font-medium border transition-colors ${
-                          preferredContactMethod === method
-                            ? 'bg-zinc-800 border-white/20 text-white font-bold'
-                            : 'bg-zinc-950 border-white/10 text-zinc-400 hover:text-white'
-                        }`}
-                      >
-                        {method}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+              {/* Event Location */}
+              <div>
+                <label className="block text-zinc-400 font-medium mb-1 font-mono text-[10px] uppercase">
+                  Event Location
+                </label>
+                <input
+                  type="text"
+                  value={eventLocation}
+                  onChange={(e) => setEventLocation(e.target.value)}
+                  placeholder="e.g. Kochi, Kerala"
+                  className="w-full bg-zinc-950 border border-white/10 rounded-lg px-3 py-2 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-violet-500"
+                />
+              </div>
+
+              {/* Additional Details */}
+              <div>
+                <label className="block text-zinc-400 font-medium mb-1 font-mono text-[10px] uppercase">
+                  Additional Details
+                </label>
+                <textarea
+                  rows={3}
+                  value={additionalDetails}
+                  onChange={(e) => setAdditionalDetails(e.target.value)}
+                  placeholder="Tell us more about your requirements, vision, or any specific preferences..."
+                  className="w-full bg-zinc-950 border border-white/10 rounded-lg px-3 py-2 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-violet-500"
+                />
               </div>
 
               {/* Submit CTA */}
@@ -388,16 +278,16 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ini
                   className="w-full btn-electric flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold uppercase tracking-wider text-white disabled:opacity-50"
                 >
                   {loading ? (
-                    <span>Submitting Inquiry...</span>
+                    <span>Submitting...</span>
                   ) : (
                     <>
                       <Send className="w-4 h-4" />
-                      <span>Submit Project Inquiry</span>
+                      <span>Submit Appointment Request</span>
                     </>
                   )}
                 </button>
                 <p className="text-[10px] text-zinc-500 text-center mt-2">
-                  We review requests within 24 hours. Appointments are confirmed based on crew availability.
+                  We review requests within 24 hours. Appointments are confirmed based on availability.
                 </p>
               </div>
             </form>

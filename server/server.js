@@ -356,11 +356,11 @@ app.delete('/api/team/:id', (req, res) => {
 app.post('/api/inquiries', (req, res) => {
   const {
     fullName, email, phone, organization, services, projectTitle,
-    projectDescription, eventDate, preferredAppointmentDate,
+    projectDescription, eventDate, eventLocation, preferredAppointmentDate,
     preferredAppointmentTime, budgetRange, preferredContactMethod
   } = req.body;
 
-  if (!fullName || !email || !phone || !services || services.length === 0 || !projectTitle || !projectDescription) {
+  if (!fullName || !email || !phone || !services || services.length === 0 || !projectTitle) {
     return res.status(400).json({ error: 'Please fill in all mandatory fields.' });
   }
 
@@ -389,39 +389,40 @@ app.post('/api/inquiries', (req, res) => {
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'new_inquiry')
   `).run(
     inqId, fullName, email, phone, organization || '', JSON.stringify(servicesArr),
-    projectTitle, projectDescription, eventDate || '',
-    preferredAppointmentDate || '', preferredAppointmentTime || '',
+    projectTitle, projectDescription || '', eventDate || '',
+    preferredAppointmentDate || eventDate || '', preferredAppointmentTime || '10:00',
     budgetRange || 'Contact for Quote', preferredContactMethod || 'Email'
   );
 
-  // If appointment date/time provided, create appointment record
-  if (preferredAppointmentDate && preferredAppointmentTime) {
-    db.prepare(`
-      INSERT INTO appointments (
-        id, inquiry_id, client_name, client_email, client_phone,
-        service_name, appointment_date, appointment_time, status, notes
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'new_inquiry', ?)
-    `).run(
-      aptId, inqId, fullName, email, phone,
-      servicesArr.join(', '), preferredAppointmentDate, preferredAppointmentTime,
-      `Requested via booking inquiry form for project: ${projectTitle}`
-    );
-  }
+  // Always create appointment record for every inquiry
+  db.prepare(`
+    INSERT INTO appointments (
+      id, inquiry_id, client_name, client_email, client_phone,
+      service_name, appointment_date, appointment_time, location, status, notes
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)
+  `).run(
+    aptId, inqId, fullName, email, phone,
+    servicesArr.join(', '),
+    preferredAppointmentDate || eventDate || '',
+    preferredAppointmentTime || '10:00',
+    eventLocation || '',
+    `Service: ${servicesArr.join(', ')}${eventDate ? ' | Event Date: ' + eventDate : ''}${eventLocation ? ' | Location: ' + eventLocation : ''}${projectDescription ? ' | Details: ' + projectDescription : ''}`
+  );
 
   // Admin notification
   createNotification(
     'inquiry',
-    'New Project Booking Inquiry',
-    `${fullName} (${organization || 'Individual'}) requested consultation for "${projectTitle}"`,
-    '/admin/inquiries'
+    'New Appointment Request',
+    `${fullName} requested ${servicesArr.join(', ')}${eventLocation ? ' at ' + eventLocation : ''}`,
+    '/admin/appointments'
   );
 
-  logActivity('CREATE', `New booking inquiry from ${fullName}: ${projectTitle}`, 'Client / Visitor', 'inquiries', inqId);
+  logActivity('CREATE', `New appointment request from ${fullName}: ${servicesArr.join(', ')}`, 'Client / Visitor', 'inquiries', inqId);
 
   res.status(201).json({
     success: true,
     referenceId: inqId,
-    message: 'Thank you! Your project inquiry and appointment request have been securely recorded. Our creative lead will review your requirements and reach out via ' + (preferredContactMethod || 'Email') + '.'
+    message: 'Thank you! Your appointment request has been submitted. Our team will review and confirm your booking shortly.'
   });
 });
 
@@ -525,13 +526,26 @@ app.post('/api/inquiries/:id/convert', (req, res) => {
 // -------------------------------------------------------------
 app.get('/api/appointments', (req, res) => {
   const { status } = req.query;
-  let query = 'SELECT * FROM appointments';
+  let query = `
+    SELECT a.*,
+           i.event_date as inq_event_date,
+           i.project_description as inq_description,
+           i.project_title as inq_title,
+           i.organization as inq_org
+    FROM appointments a
+    LEFT JOIN inquiries i ON a.inquiry_id = i.id
+  `;
   const params = [];
   if (status && status !== 'all') {
-    query += ' WHERE status = ?';
-    params.push(status);
+    if (status === 'new_inquiry' || status === 'pending') {
+      query += ' WHERE a.status IN (?, ?)';
+      params.push('new_inquiry', 'pending');
+    } else {
+      query += ' WHERE a.status = ?';
+      params.push(status);
+    }
   }
-  query += ' ORDER BY appointment_date ASC, appointment_time ASC';
+  query += ' ORDER BY a.created_at DESC';
 
   const rows = db.prepare(query).all(...params).map(r => ({
     id: r.id,
@@ -548,7 +562,10 @@ app.get('/api/appointments', (req, res) => {
     status: r.status,
     notes: r.notes || '',
     meetingNotes: r.meeting_notes || '',
-    createdAt: r.created_at
+    createdAt: r.created_at,
+    eventDate: r.inq_event_date || r.appointment_date || '',
+    eventLocation: r.location || '',
+    additionalDetails: r.inq_description || r.notes || ''
   }));
   res.json(rows);
 });
@@ -608,8 +625,74 @@ app.put('/api/appointments/:id', (req, res) => {
     id
   );
 
+  // Synchronize status with linked inquiry if present
+  if (current.inquiry_id) {
+    if (status === 'confirmed') {
+      db.prepare("UPDATE inquiries SET status = 'confirmed', updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(current.inquiry_id);
+    } else if (status === 'cancelled') {
+      db.prepare("UPDATE inquiries SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(current.inquiry_id);
+    }
+  }
+
   logActivity('UPDATE', `Updated appointment ${id} for ${current.client_name}`, 'Admin', 'appointments', id);
   res.json({ success: true });
+});
+
+// Approve & Convert Appointment into Project
+app.post('/api/appointments/:id/convert-to-project', (req, res) => {
+  const { id } = req.params;
+  const apt = db.prepare('SELECT * FROM appointments WHERE id = ?').get(id);
+  if (!apt) return res.status(404).json({ error: 'Appointment not found' });
+
+  let inq = null;
+  if (apt.inquiry_id) {
+    inq = db.prepare('SELECT * FROM inquiries WHERE id = ?').get(apt.inquiry_id);
+  }
+
+  // Check or create client
+  let client = db.prepare('SELECT id FROM clients WHERE email = ?').get(apt.client_email);
+  let clientId = client ? client.id : null;
+
+  if (!clientId) {
+    clientId = 'cl_' + Date.now();
+    db.prepare(`
+      INSERT INTO clients (id, name, email, phone, organization, services_requested, project_history, notes, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active')
+    `).run(
+      clientId, apt.client_name, apt.client_email, apt.client_phone,
+      inq?.organization || '',
+      JSON.stringify([apt.service_name || 'Creative Service']),
+      apt.service_name || 'Project',
+      `Created from appointment ${id}`
+    );
+  }
+
+  // Create Project
+  const projectId = 'prj_' + Date.now();
+  const projectName = inq?.project_title || `${apt.service_name || 'Creative'} Project - ${apt.client_name}`;
+  const projectDesc = inq?.project_description || apt.notes || `Project for ${apt.client_name}`;
+  const eventDate = inq?.event_date || apt.appointment_date || null;
+
+  db.prepare(`
+    INSERT INTO projects (
+      id, project_name, client_id, client_name, description,
+      services_json, start_date, deadline, priority, status, progress_pct, internal_notes
+    ) VALUES (?, ?, ?, ?, ?, ?, date('now'), ?, 'medium', 'in_progress', 20, ?)
+  `).run(
+    projectId, projectName, clientId, apt.client_name, projectDesc,
+    JSON.stringify([apt.service_name || 'Creative Service']),
+    eventDate,
+    `Approved project from appointment ${id}`
+  );
+
+  // Update appointment & inquiry to confirmed
+  db.prepare("UPDATE appointments SET status = 'confirmed', client_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(clientId, id);
+  if (apt.inquiry_id) {
+    db.prepare("UPDATE inquiries SET status = 'confirmed', client_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(clientId, apt.inquiry_id);
+  }
+
+  logActivity('CONVERT', `Approved project ${projectId} for ${apt.client_name}`, 'Admin', 'projects', projectId);
+  res.json({ success: true, clientId, projectId });
 });
 
 app.delete('/api/appointments/:id', (req, res) => {
@@ -1278,6 +1361,10 @@ app.get('/api/activity-logs', (req, res) => {
   res.json(logs);
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Visual Woxx Backend API server running on http://localhost:${PORT}`);
+});
+
+server.on('error', (err) => {
+  console.error('Server error:', err);
 });

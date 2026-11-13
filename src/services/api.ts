@@ -150,6 +150,7 @@ export async function submitInquiry(inquiryData: {
   projectTitle: string;
   projectDescription: string;
   eventDate?: string;
+  eventLocation?: string;
   preferredAppointmentDate?: string;
   preferredAppointmentTime?: string;
   budgetRange?: string;
@@ -206,6 +207,14 @@ export async function updateAppointment(id: string, data: any): Promise<{ succes
     method: 'PUT',
     headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
     body: JSON.stringify(data)
+  });
+  return handleResponse(res);
+}
+
+export async function approveAppointmentProject(id: string): Promise<{ success: boolean; clientId: string; projectId: string }> {
+  const res = await fetch(`${API_BASE}/appointments/${id}/convert-to-project`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getAuthHeader() }
   });
   return handleResponse(res);
 }
