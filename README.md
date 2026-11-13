@@ -1,6 +1,6 @@
 # Visual Woxx — Complete Creative Digital Solutions Platform
 
-> **"Your Vision. Our Visuals."**
+> **"CREATIVE STUDIO"**
 
 Visual Woxx is a modern, premium, fully responsive web application and internal operations platform built for **Visual Woxx**, a creative digital solutions company delivering high-end design, cinematography, event coverage, publications, and digital branding.
 

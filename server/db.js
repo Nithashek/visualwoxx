@@ -381,7 +381,7 @@ function seedInitialData() {
   const insertSetting = db.prepare('INSERT OR REPLACE INTO site_settings (key, value) VALUES (?, ?)');
   const defaultSettings = {
     brand_name: 'Visual Woxx',
-    tagline: 'Your Vision. Our Visuals.',
+    tagline: 'CREATIVE STUDIO',
     hero_headline: 'WE TURN IDEAS INTO VISUAL EXPERIENCES.',
     hero_description: 'Visual Woxx is your creative partner for design, photography, videography, branding, and complete digital solutions. From the first idea to the final frame, we bring your vision to life.',
     company_description: 'We turn imagination into visuals that make an impact. From creative concepts to captivating content, Visual Woxx brings design, media, and storytelling together to make every vision impossible to ignore.',

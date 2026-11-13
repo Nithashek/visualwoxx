@@ -1,6 +1,48 @@
 @import "tailwindcss";
 @config "../tailwind.config.js";
 
+/* Local Clash Display Font Faces (Instant load on refresh, eliminates FOIT/FOUT) */
+@font-face {
+  font-family: 'Clash Display';
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url('/fonts/clash-display/ClashDisplay-Regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Clash Display';
+  font-style: normal;
+  font-weight: 500;
+  font-display: block;
+  src: url('/fonts/clash-display/ClashDisplay-Medium.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Clash Display';
+  font-style: normal;
+  font-weight: 600;
+  font-display: block;
+  src: url('/fonts/clash-display/ClashDisplay-Semibold.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Clash Display';
+  font-style: normal;
+  font-weight: 700;
+  font-display: block;
+  src: url('/fonts/clash-display/ClashDisplay-Bold.woff2') format('woff2');
+}
+
+/* Local Inter Fallback */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/inter/Inter-Latin.woff2') format('woff2');
+}
+
 @theme {
   --font-sans: 'Clash Display', 'Inter', system-ui, sans-serif;
   --font-display: 'Clash Display', 'Inter', system-ui, sans-serif;
