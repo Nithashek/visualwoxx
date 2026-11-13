@@ -55,7 +55,7 @@ export const App: React.FC = () => {
       if (data) {
         try {
           localStorage.setItem('vw_site_settings', JSON.stringify(data));
-        } catch {}
+        } catch { }
       }
     }).catch(console.error);
     fetchPortfolio().then(setPortfolio).catch(console.error);
@@ -147,6 +147,8 @@ export const App: React.FC = () => {
             portfolio={portfolio}
             onSelectProject={setSelectedPortfolioItem}
             onOpenBooking={handleOpenBooking}
+            settings={settings}
+            onNavigate={handleNavigate}
           />
         )}
 
@@ -162,12 +164,14 @@ export const App: React.FC = () => {
         )}
       </main>
 
-      {/* Footer */}
-      <Footer
-        settings={settings}
-        onNavigate={handleNavigate}
-        onOpenBooking={() => handleOpenBooking()}
-      />
+      {/* Footer - hidden on portfolio page since it renders its own */}
+      {currentPage !== 'portfolio' && (
+        <Footer
+          settings={settings}
+          onNavigate={handleNavigate}
+          onOpenBooking={() => handleOpenBooking()}
+        />
+      )}
 
       {/* Global Interactive Modals */}
       <BookingModal

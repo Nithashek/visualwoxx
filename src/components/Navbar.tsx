@@ -27,11 +27,13 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate, onOpenB
     { id: 'contact', label: 'Contact' },
   ];
 
+  const isSolidPage = currentPage === 'portfolio' || scrolled;
+
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled
-          ? 'bg-zinc-950/90 backdrop-blur-md border-b border-white/[0.08] py-3 shadow-xl'
+        isSolidPage
+          ? 'bg-zinc-950/95 backdrop-blur-md border-b border-white/[0.08] py-3.5 shadow-2xl'
           : 'bg-transparent py-5'
       }`}
     >

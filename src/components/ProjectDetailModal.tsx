@@ -187,7 +187,18 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ project,
           {project.credits && (
             <div className="p-4 rounded-xl bg-zinc-950 border border-white/10 text-xs space-y-1">
               <span className="font-mono text-zinc-400 text-[10px] uppercase block">Creative Credits</span>
-              <p className="text-zinc-300">{project.credits}</p>
+              {typeof project.credits === 'string' ? (
+                <p className="text-zinc-300">{project.credits}</p>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-zinc-300">
+                  {Object.entries(project.credits).map(([role, name]) => (
+                    <div key={role}>
+                      <span className="text-zinc-500 font-mono text-[10px]">{role}: </span>
+                      <span>{name}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
