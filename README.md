@@ -19,12 +19,10 @@ Visual Woxx is a modern, premium, fully responsive web application and internal 
 ## 🌐 Public Website Capabilities
 
 1. **Homepage (`/`)**:
-   - **Hero Section**: Cinematic headline *"WE TURN IDEAS INTO VISUAL EXPERIENCES."*, supporting narrative, *"Start a Project"* and *"Explore Our Work"* action buttons, plus interactive video showcase cards.
-   - **Company Advantage**: Highlights the benefit of accessing multiple creative services through one unified in-house team.
-   - **12 Services Overview**: Cards with bespoke icons, short descriptions, included deliverables, and *"Book Now"* shortcuts.
-   - **Featured Portfolio**: Live case study grid with category filter tabs (*Event Coverage, Graphic Design, Photography, Videography, Reels, Branding, Packaging Design, Product Shoots*).
-   - **Why Choose Visual Woxx?**: 6 pillars of creative and operational excellence.
-   - **Call-to-Action & Footer**: Complete contact information, social channels, legal modals, and direct admin gateway.
+   - **Hero Section**: Cinematic headline *"WE TURN IDEAS INTO VISUAL EXPERIENCES."*, supporting narrative, *"Book an Appointment"* and *"Explore Our Work"* action buttons, studio performance metrics (5+ Happy Customers, 10+ Completed Projects, 100+ Freelancers).
+   - **Client Testimonials**: Verified customer feedback cards with 5-star ratings and client designations.
+   - **Call-to-Action**: High-impact *"LET'S CREATE SOMETHING EXTRAORDINARY."* project kickoff section.
+   - **Site Footer**: Dynamic studio branding, location (*Kerala, India*), official contact email (*contact@visualwoxx.in*), social links, legal modals (*Privacy Policy, Terms & Conditions*), and admin gateway.
 
 2. **About Page (`/about`)**:
    - Studio philosophy, Mission, Vision, and the signature **6-Step Collaborative Approach** (*Understand Vision → Plan Approach → Develop Concepts → Execute Collaboratively → Review & Refine → Deliver Final Output*).
@@ -46,9 +44,17 @@ Visual Woxx is a modern, premium, fully responsive web application and internal 
      12. Custom Creative Solutions
    - Detailed deliverables checklists, transparent package tiers, and direct *"Book This Service"* integration.
 
-4. **Book an Appointment / Project Inquiry (`/book`)**:
-   - Complete multi-service selection, project title & scope description, target event date, preferred appointment date & time picker, budget range selector, and preferred contact method (*Email, Phone, WhatsApp*).
-   - Real-time database persistence, duplicate submission protection, and instant reference ID.
+4. **Book an Appointment / Project Inquiry (`/book` & Booking Modal)**:
+   - Streamlined, intuitive 7-field booking flow:
+     1. **Full Name**
+     2. **Email Address**
+     3. **Contact Number**
+     4. **Service Required** (Dynamic dropdown selector)
+     5. **Event Date**
+     6. **Event Location**
+     7. **Additional Details**
+   - Real-time database persistence, duplicate submission protection, instant reference code generation, and celebration effects.
+   - Synchronized with administrative appointment scheduling.
 
 5. **Portfolio & Case Studies (`/portfolio`)**:
    - Filterable showcase grid with search functionality.
@@ -60,7 +66,7 @@ Visual Woxx is a modern, premium, fully responsive web application and internal 
    - Direct integration into the private administrative recruitment pipeline.
 
 7. **Contact Page (`/contact`)**:
-   - Official studio email, phone/WhatsApp, physical studio address, and social links fetched dynamically from live CMS settings.
+   - Official studio email (`contact@visualwoxx.in`), location (`Kerala, India`), phone/WhatsApp, and social links fetched dynamically from live CMS settings.
    - Working contact message form routing directly to the Admin Inbox.
 
 ---
@@ -72,9 +78,13 @@ Accessible via the lock icon in the navigation bar and footer.
 ### Administrative Credentials:
 | Role | Username | Password | Scope |
 |---|---|---|---|
-| **Admin** | `admin` | `admin123` | Single unified admin dashboard: Freelance details, Portfolio handling, Review updation, and Inquiries |
+| **Admin** | `admin` | `admin123` | Complete administrative access: Appointments, Projects, Inquiries, Freelancers, Portfolio, Reviews, Content, and Team |
 
 ### Unified Admin Dashboard Capabilities:
+* **Appointments & Project Decisions**:
+  - Comprehensive view of client bookings with client contact, requested service, event date, event location, and detailed project scope.
+  - **Project Decision Controls**: One-click **Approve Project** (automatically provisions client & active project in the system), **Decline / Reject**, or **Mark Confirmed**.
+  - Rescheduling controls and meeting notes management.
 * **Functional Dashboard**: Real-time KPI counters (Freelancers, Pending Applications, Portfolio Works, Active Reviews, and Inquiries) with instant management shortcuts.
 * **Freelance Details Handling**: Review applicant pipeline with direct portfolio & resume links, status evaluator (`new_application`, `under_review`, `approved`, `rejected`), and active crew roster management with availability and star ratings.
 * **Portfolio Detail Handling**: Add, edit, preview, and delete case studies; update titles, categories, client details, cover imagery, 4K video preview links, deliverable tags, and gallery photos; toggle featured and published states.
@@ -92,7 +102,7 @@ Accessible via the lock icon in the navigation bar and footer.
 
 ## 🗄️ Relational Database Schema (SQLite)
 
-The database schema (`server/data/visual_woxx.db`) strictly implements all 19 tables specified in Section 11:
+The database schema (`server/data/visual_woxx.db`) strictly implements all 19 tables:
 1. `profiles`
 2. `clients`
 3. `services`
@@ -126,5 +136,5 @@ npm run dev
 ```
 
 * **Public Website**: [http://localhost:3000](http://localhost:3000)
-* **Admin Portal**: [http://localhost:3000](http://localhost:3000) (Navigate to `/admin` or click the Shield icon in the navbar)
+* **Admin Portal**: [http://localhost:3000](http://localhost:3000) (Navigate to `/admin` or click the lock/shield icon)
 * **Backend REST API**: [http://localhost:5000/api](http://localhost:5000/api)
