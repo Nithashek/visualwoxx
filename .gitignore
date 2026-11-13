@@ -1,0 +1,13 @@
+node_modules/
+dist/
+dist-ssr/
+*.local
+.env
+.env.*
+.DS_Store
+Thumbs.db
+server/data/*.db-journal
+server/data/*.db-shm
+server/data/*.db-wal
+
+visualwoxx/
