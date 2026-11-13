@@ -29,7 +29,7 @@ export const Footer: React.FC<FooterProps> = ({ settings, onNavigate, onOpenBook
                   VISUAL WOXX
                 </span>
                 <span className="block text-[9px] font-mono tracking-widest text-zinc-500 uppercase -mt-0.5">
-                  {settings?.tagline || 'CREATIVE STUDIO'}
+                  CREATIVE STUDIO
                 </span>
               </div>
             </div>
