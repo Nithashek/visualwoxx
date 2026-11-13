@@ -101,6 +101,9 @@ export interface Appointment {
   status: 'new_inquiry' | 'pending' | 'confirmed' | 'rescheduled' | 'completed' | 'cancelled' | string;
   notes?: string;
   meetingNotes?: string;
+  eventDate?: string;
+  eventLocation?: string;
+  additionalDetails?: string;
   createdAt: string;
 }
 
