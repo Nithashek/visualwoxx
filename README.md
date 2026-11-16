@@ -28,23 +28,7 @@ Visual Woxx is a modern, premium, fully responsive web application and internal 
    - Studio philosophy, Mission, Vision, and the signature **6-Step Collaborative Approach** (*Understand Vision → Plan Approach → Develop Concepts → Execute Collaboratively → Review & Refine → Deliver Final Output*).
    - **Core Leadership Team**: Dynamically rendered from the database (*Founder & Creative Director, Operations Lead, Design Lead, Photography Lead, Videography Lead, Editing Lead, Marketing Lead*).
 
-3. **Services Page (`/services`)**:
-   - Comprehensive breakdown of all **12 Creative Services**:
-     1. Graphic Design
-     2. Event Posters and Branding
-     3. Photography
-     4. Videography
-     5. Highlight Videos
-     6. Reels and Short Videos
-     7. Brochures and Digital Publications
-     8. Magazine Design
-     9. Product Shoots
-     10. Packaging Design
-     11. Social Media Content
-     12. Custom Creative Solutions
-   - Detailed deliverables checklists, transparent package tiers, and direct *"Book This Service"* integration.
-
-4. **Book an Appointment / Project Inquiry (`/book` & Booking Modal)**:
+3. **Book an Appointment / Project Inquiry (`/book` & Booking Modal)**:
    - Streamlined, intuitive 7-field booking flow:
      1. **Full Name**
      2. **Email Address**
@@ -56,16 +40,16 @@ Visual Woxx is a modern, premium, fully responsive web application and internal 
    - Real-time database persistence, duplicate submission protection, instant reference code generation, and celebration effects.
    - Synchronized with administrative appointment scheduling.
 
-5. **Portfolio & Case Studies (`/portfolio`)**:
+4. **Portfolio & Case Studies (`/portfolio`)**:
    - Filterable showcase grid with search functionality.
    - Interactive **Case Study Modal**: Cover photo, media gallery carousel, embedded 4K video preview, client details, deliverables tags, and creative credits (*Creative Director, Lead DP, Editor*).
 
-6. **Join Us — Freelancer Application (`/join-us`)**:
+5. **Join Us — Freelancer Application (`/join-us`)**:
    - *"YOUR CREATIVITY HAS A PLACE HERE."*
    - Application form with 12 creative disciplines, additional skills multi-select, portfolio URL, Instagram/LinkedIn links, working style, availability, and resume URL.
    - Direct integration into the private administrative recruitment pipeline.
 
-7. **Contact Page (`/contact`)**:
+6. **Contact Page (`/contact`)**:
    - Official studio email (`contact@visualwoxx.in`), location (`Kerala, India`), phone/WhatsApp, and social links fetched dynamically from live CMS settings.
    - Working contact message form routing directly to the Admin Inbox.
 
@@ -92,7 +76,6 @@ Accessible via the lock icon in the navigation bar and footer.
 * **Inquiries & Discovery**: Review prospective client scopes, budgets, preferred contact methods, and update appointment and project consultation statuses.
 * **Freelancer Roster**: Two tabs: *Applications Pipeline* (review portfolios, resumes, and evaluate applicants) and *Approved Roster* (track skills, availability status, and ratings).
 * **Portfolio CMS**: Publish, edit, feature, and delete case studies and media gallery items.
-* **Services CMS**: Manage all 12 services, update deliverables, and change display ordering.
 * **Core Team CMS**: Manage leadership members, update positions, bio summaries, and photos (updates the public About page in real-time).
 * **Message Inbox**: Review contact submissions, toggle read/unread, and record response notes.
 * **Website Content CMS**: Live editable brand name, tagline, hero text, about copy, mission/vision, contact info, and footer.
@@ -102,7 +85,7 @@ Accessible via the lock icon in the navigation bar and footer.
 
 ## 🗄️ Relational Database Schema (SQLite)
 
-The database schema (`server/data/visual_woxx.db`) strictly implements all 19 tables:
+The database schema (`server/data/visual_woxx.db`) implements:
 1. `profiles`
 2. `clients`
 3. `services`

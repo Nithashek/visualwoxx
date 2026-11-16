@@ -46,6 +46,8 @@
 @theme {
   --font-sans: 'Clash Display', 'Inter', system-ui, sans-serif;
   --font-display: 'Clash Display', 'Inter', system-ui, sans-serif;
+  --font-mono: 'Erode', ui-monospace, monospace;
+  --font-erode: 'Erode', serif;
 }
 
 @layer base {

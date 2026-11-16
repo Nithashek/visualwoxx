@@ -40,6 +40,8 @@ module.exports = {
       fontFamily: {
         sans: ['"Clash Display"', 'Inter', 'system-ui', 'sans-serif'],
         display: ['"Clash Display"', 'Inter', 'system-ui', 'sans-serif'],
+        mono: ['Erode', 'ui-monospace', 'monospace'],
+        erode: ['Erode', 'serif'],
       },
       boxShadow: {
         'glow-purple': '0 0 40px -10px rgba(234, 0, 255, 0.45)',

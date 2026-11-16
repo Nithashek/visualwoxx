@@ -218,7 +218,7 @@ export const JoinUsPage: React.FC = () => {
                 01. Personal Information
               </span>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-4">
                 <div>
                   <label className="block text-zinc-400 font-medium mb-1 font-mono text-[10px] uppercase">
                     Full Name <span className="text-violet-400">*</span>
@@ -283,7 +283,7 @@ export const JoinUsPage: React.FC = () => {
                 02. Creative Disciplines & Experience
               </span>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-4">
                 <div>
                   <label className="block text-zinc-400 font-medium mb-1 font-mono text-[10px] uppercase">
                     Primary Creative Discipline <span className="text-violet-400">*</span>
@@ -350,7 +350,7 @@ export const JoinUsPage: React.FC = () => {
                 03. Portfolio & Social Links
               </span>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-4">
                 <div>
                   <label className="block text-zinc-400 font-medium mb-1 font-mono text-[10px] uppercase">
                     Portfolio / Website URL <span className="text-violet-400">*</span>
@@ -413,7 +413,7 @@ export const JoinUsPage: React.FC = () => {
                 04. Availability & Introduction
               </span>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-4">
                 <div>
                   <label className="block text-zinc-400 font-medium mb-1 font-mono text-[10px] uppercase">
                     Preferred Working Style
